@@ -1,5 +1,6 @@
 const express = require('express');
 const userRoutes = require('./routes/user');
+const messageRoutes = require('./routes/message');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.urlencoded({
 }));
 
 app.use('/api/auth', userRoutes);
+app.use('/api/messages', messageRoutes)
 
 
 

@@ -5,11 +5,10 @@ const express = require('express');
 const router = express.Router();
 
 // Importation du controlller et des middleware
-const userCtrl = require('../controllers/user');
+const messageCtrl = require('../controllers/message');
 const auth = require('../middleware/auth');
 
-// Création de la route Login avec le middleware limiter
-router.post('/login', userCtrl.login);
-router.post('/signup', userCtrl.signup);
+router.get('/allmessages', auth,  messageCtrl.allMessages);
+
 
 module.exports = router;
