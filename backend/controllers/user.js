@@ -37,6 +37,10 @@ exports.signup = (req, res, next) => {
         {
           user_login: req.body.user_login,
           user_password: hash,
+          user_email: req.body.user_email,
+          user_firstname: req.body.user_firstname,
+          user_lastname: req.body.user_lastname,
+          user_birthdate: req.body.user_birthdate,
         }
       )
         .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))

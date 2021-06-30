@@ -17,6 +17,23 @@ module.exports = sequelize.define('User', {
         type: Sequelize.STRING(60),
         allowNull: false,
     },
+    user_email: {
+        type: Sequelize.STRING(60),
+        allowNull: false,
+        unique: true,
+    },
+    user_firstname: {
+        type: Sequelize.STRING(30),
+        allowNull: false,
+    },
+    user_lastname: {
+        type: Sequelize.STRING(30),
+        allowNull: false,
+    },
+    user_birthdate: {
+        type: Sequelize.DATE,
+        allowNull: true,
+    },
 },
 {
     createdAt: false,

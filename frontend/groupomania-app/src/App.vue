@@ -1,6 +1,6 @@
 <template>
-<Nav/>  
-<router-view/>
+  <Nav/>  
+  <router-view/>
 </template>
 
 <script>
@@ -28,14 +28,15 @@ export default {
   z-index: 2;
 }
 
-.form-signin input[type="email"] {
-  margin-bottom: -1px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
 
 .form-signin input[type="password"] {
   margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.form-signin input[type="login"] {
+  margin-bottom: -1px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
