@@ -16,22 +16,41 @@ export default {
         }
     },
     created() {
+        const lsToken = localStorage.getItem('token');
+        const ssToken = sessionStorage.getItem('token');
+        if ((lsToken === null) && (ssToken === null)){
+            this.$router.push('/');
+        }
+        else if (ssToken === null) {
         axios.get('http://localhost:3000/api/messages/allmessages', {
-            headers: {
-                Authorization:'Bearer ' + localStorage.getItem('token')
-            }
-        })
-        .then (
-            res => {
-                console.log(res.data.message[0].post)
-                this.data = res.data.message[0].post
-            }
-        ).catch(
-            err => {
-            console.log(err)
-            }
-        )
-
+                headers: {
+                    Authorization:'Bearer ' + localStorage.getItem('token')
+                }
+            })
+            .then (
+                res => {
+                    this.data = res.data.message[0].post
+                }
+            ).catch(
+                () => {
+                }
+            )
+        }
+        else if (lsToken === null){
+                    axios.get('http://localhost:3000/api/messages/allmessages', {
+                headers: {
+                    Authorization:'Bearer ' + sessionStorage.getItem('token')
+                }
+            })
+            .then (
+                res => {
+                    this.data = res.data.message[0].post
+                }
+            ).catch(
+                ()=> {
+                }
+            )
+        }
     }
 }
 </script>

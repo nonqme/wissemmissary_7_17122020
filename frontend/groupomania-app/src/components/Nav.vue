@@ -6,10 +6,10 @@
             <div>
                 <ul class="navbar-nav me-auto mb-2 mb-md-0">
                     <li class="nav-item">
-                        <router-link to="/" class="nav-link" >Login</router-link>
+                        <router-link to="/register" class="nav-link">Signup</router-link>
                     </li>
                     <li class="nav-item">
-                        <router-link to="/register" class="nav-link">Signup</router-link>
+                        <router-link to="/" class="nav-link" @click="logOut">Log Out</router-link>
                     </li>
                 </ul>
             </div>
@@ -20,8 +20,13 @@
 
 <script>
 export default {
-name: "Nav"
-
+name: "Nav",
+  methods: {
+    logOut() {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+    }
+  },
 }
 </script>
 

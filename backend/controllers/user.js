@@ -8,12 +8,12 @@ exports.login = (req, res, next) => {
   User.findOne({ where: { user_login: Login }})
     .then(user => {
       if (!user) {
-        return res.status(401).json({ error: 'Utilisateur non trouvé !' });
+        return res.status(401).json({ error: 'Utilisateur ou mot de pass INCORRECT !' });
       }
       bcrypt.compare(req.body.user_password, user.user_password)
         .then(valid => {
           if (!valid) {
-            return res.status(401).json({ error: 'Mot de passe incorrect !' });
+            return res.status(401).json({ error: 'Utilisateur ou mot de pass INCORRECT !' });
           }
           res.status(200).json({
             id: user.id,
@@ -44,7 +44,11 @@ exports.signup = (req, res, next) => {
         }
       )
         .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => {
+          if ((error.name) === ("SequelizeUniqueConstraintError")) {
+            res.status(400).json({ error: 'Vous avez déjà un compte.' })
+          }
+        });
     })
     .catch(error => res.status(500).json({ error }));
 };

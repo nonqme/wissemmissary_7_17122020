@@ -1,22 +1,26 @@
 <template>
-  <main class="form-signin">
+  <section class="form-signin">
     <form @submit.prevent="handleSubmit">
       <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
       <div class="form-floating"> 
         <input type="text" class="form-control" v-model="user_login" placeholder="Login">
+        <label for="floatingInput">Login</label>
       </div>
       <div class="form-floating">
         <input type="password" class="form-control" v-model="user_password" placeholder="Password">
+        <label for="floatingPassword">Password</label>
       </div>
 
       <div class="checkbox mb-3">
         <label>
-          <input type="checkbox" value="remember-me"> Remember me
+          <input type="checkbox" value="remember-me" v-model="checked"> Remember me
         </label>
       </div>
       <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
     </form>
-  </main> 
+      <p class="error__code">{{error}}</p>
+      <p class="error__message">{{errorMessage}}</p>
+  </section> 
 </template>
 
 <script>
@@ -27,7 +31,17 @@ export default {
       return {
         user_login: '',
         user_password: '',
+        error:'',
+        errorMessage:'',
+        checked:false,
       }
+    },
+    created() {
+      const lsToken = localStorage.getItem('token');
+      const ssToken = sessionStorage.getItem('token');
+        if ((lsToken !== null) || (ssToken !== null)){
+            this.$router.push('/messages');
+        }
     },
     methods: {
         handleSubmit(){
@@ -38,13 +52,19 @@ export default {
           axios.post('http://localhost:3000/api/auth/login', data)
             .then (
               res => {
-                console.log(res)
+                if (this.checked) {
                 localStorage.setItem('token', res.data.token);
                 this.$router.push('/messages');
+                }
+              else {
+                sessionStorage.setItem('token', res.data.token);
+                this.$router.push('/messages');
+              }
               }
             ).catch(
               err => {
-                console.log(err)
+                this.error = err.message
+                this.errorMessage = err.response.data.error
               }
             )
         }

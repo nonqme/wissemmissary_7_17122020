@@ -1,5 +1,5 @@
 <template>
-  <main class="form-signin">
+  <section class="form-signin">
     <form @submit.prevent="handleSubmit">
       <h1 class="h3 mb-3 fw-normal">Please register</h1>
       <div class="form-floating"> 
@@ -32,7 +32,9 @@
       </div>
       <button class="w-100 btn btn-lg btn-primary" type="submit">Submit</button>
     </form>
-  </main> 
+      <p class="error__code">{{error}}</p>
+      <p class="error__message">{{errorMessage}}</p>
+  </section> 
 </template>
 
 <script>
@@ -48,6 +50,8 @@ export default {
         user_firstname: '',
         user_lastname:'',
         user_birthdate:'',
+        error:'',
+        errorMessage:'',
       }
     },
     methods: {
@@ -63,17 +67,17 @@ export default {
           }
           axios.post('http://localhost:3000/api/auth/signup', data)
             .then (
-              res => {
-                console.log(res)
+              () => {
                 this.$router.push('/');
               }
             ).catch(
               err => {
-                console.log(err)
+                this.error = err.message
+                this.errorMessage = err.response.data.error
               }
             )
         } else {
-          console.log('Erreur');
+          this.errorMessage = "Confirmation de mot de pass incorect."
         }
     }
 }

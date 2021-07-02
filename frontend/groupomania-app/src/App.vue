@@ -41,4 +41,17 @@ export default {
   border-top-right-radius: 0;
 }
 
+.error {
+  &__message{
+  color: red;
+  margin: 0;
+  }
+  &__code{
+    color: red;
+    padding-top: 10px;
+    margin: 0;
+  }
+}
+
+
 </style>
