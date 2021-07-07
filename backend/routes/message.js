@@ -9,6 +9,7 @@ const messageCtrl = require('../controllers/message');
 const auth = require('../middleware/auth');
 
 router.get('/allmessages', auth,  messageCtrl.allMessages);
+router.post('/post', auth, messageCtrl.createMessage )
 
 
 module.exports = router;

@@ -23,8 +23,8 @@ export default {
 name: "Nav",
   methods: {
     logOut() {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
+        localStorage.clear();
+        sessionStorage.clear();
     }
   },
 }

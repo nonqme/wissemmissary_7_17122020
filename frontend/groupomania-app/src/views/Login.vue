@@ -54,12 +54,19 @@ export default {
               res => {
                 if (this.checked) {
                 localStorage.setItem('token', res.data.token);
+                localStorage.setItem('userid', res.data.id);
+                localStorage.setItem('userFullName', res.data.firstname + ' ' + res.data.lastname);
                 this.$router.push('/messages');
                 }
               else {
                 sessionStorage.setItem('token', res.data.token);
+                sessionStorage.setItem('userid', res.data.id);
+                sessionStorage.setItem('userFullName', res.data.firstname + ' ' + res.data.lastname);
                 this.$router.push('/messages');
+
               }
+                this.$store.state.isLoged = true;
+
               }
             ).catch(
               err => {

@@ -67,9 +67,10 @@ export default {
           }
           axios.post('http://localhost:3000/api/auth/signup', data)
             .then (
-              () => {
-                this.$router.push('/');
-              }
+              res => {
+                localStorage.setItem('token', res.data.token);
+                this.$router.push('/messages');
+                }
             ).catch(
               err => {
                 this.error = err.message

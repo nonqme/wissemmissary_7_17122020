@@ -8,7 +8,7 @@ module.exports = sequelize.define('Message', {
         autoIncrement: true,
         primaryKey: true,
     },
-    userid: {
+    userID: {
         type: Sequelize.INTEGER(11),
         allowNull: false,
         unique: true,
