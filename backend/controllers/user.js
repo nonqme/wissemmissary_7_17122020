@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Message = require('../models/message');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -18,6 +19,8 @@ exports.login = (req, res, next) => {
           res.status(200).json({
             firstname: user.user_firstname,
             lastname: user.user_lastname,
+            email: user.user_email,
+            date: user.user_birthdate,
             id: user.id,
             token: jwt.sign(
               { id: user.id },
@@ -54,3 +57,10 @@ exports.signup = (req, res, next) => {
     })
     .catch(error => res.status(500).json({ error }));
 };
+
+exports.deleteAccount = (req, res, next) => {
+  User.destroy({where:{id: req.query.id}})
+  .then(() => Message.destroy({where:{userID: req.query.id}}))
+  .then(() => res.status(200).json({ message: 'Utilisateur supprimé !' }))
+  .catch(error => res.status(400).json({ error }))
+}

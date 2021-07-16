@@ -12,7 +12,7 @@ exports.allMessages = (req, res, next) => {
 
 exports.createMessage = (req, res, next) => {
   Message.create({
-    userID: req.body.id,
+    userID: req.body.userID,
     post: req.body.post,
   }
   )
