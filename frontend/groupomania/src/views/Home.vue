@@ -12,7 +12,7 @@
             </button>
         </form>
     </div>
-    <article v-for="message in messages.slice(-10).reverse()" :key="message.id" card gedf-card>
+    <article v-for="message in messages.slice(-10).reverse()" :key="message.id"  card gedf-card>
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex justify-content-between align-items-center">
@@ -32,6 +32,18 @@
                 {{message.post}}
             </p>
         </div>
+            <button @click="deleteMessage(message.id)" type="submit" class="btn btn-primary">
+                <span v-if="status == 'deleting'">En cours de supression</span>
+                <span v-else>Supprimer</span>
+            </button>
+            <form v-on:submit.prevent class="card-body">
+            <label class="sr-only" for="message">Commentaire</label>
+            <textarea v-model="commentaire" class="form-control" id="message" rows="3" placeholder="What are you thinking?"></textarea>
+            <button @click="sendCommentaire(message.id)" type="submit" class="btn btn-primary">
+                <span v-if="status == 'loading'">En cours d'envoi</span>
+                <span v-else>Envoyer</span>
+            </button>
+        </form>
     </article>
 </section>
 </div>   
@@ -48,7 +60,8 @@ export default {
             post: '',
             messages:[],
             fullname:'',
-    }
+            commentaire:'',
+        }
   },
     mounted: function() {
         if (this.$store.state.user.id == -1) {
@@ -93,7 +106,39 @@ export default {
             this.err = error.response.data.error
         })
         this.post = '';
-        }
+        },
+        deleteMessage: function(messageId) {
+            console.log(messageId)
+            this.$store.dispatch('deleteMessage',
+                    messageId
+            ).then(response =>{
+                console.log(response)
+                this.$store.dispatch('getMyMessages')
+                .then(response =>{
+                    this.messages = response.data.message;
+                }).catch(error => {
+                    console.log(error)
+                    this.err = error.response.data.error
+                })
+            }).catch(error => {
+                console.log(error.response.data.error)
+                this.err = error.response.data.error
+            })
+            this.post = '';
+        },
+        sendCommentaire: function(messageId) {
+            this.$store.dispatch('postCommentaire', {
+                userId: this.$store.state.user.id,
+                postId: messageId,
+                commentaire: this.commentaire
+            }).then(response =>{
+                console.log(response)
+            }).catch(error => {
+                console.log(error.response.data.error)
+                this.err = error.response.data.error
+            })
+            this.post = '';
+        },
 
     }
 }

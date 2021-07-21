@@ -125,6 +125,7 @@ export default createStore({
         })
         .then(function(response){
           commit('setStatus', 'messagesLoaded');
+          console.log(response)
           resolve(response);
         })
         .catch(function(error){
@@ -154,7 +155,46 @@ export default createStore({
           reject(error);
         })
       })   
-    }
+    },
+    deleteMessage: ({commit, state}, messageInfo) => {
+      commit('setStatus', 'deleting');
+      return new Promise((resolve, reject) => {
+        instance({
+          method: 'post',
+          url:'/messages/delete/',
+          params: { id: messageInfo },  
+          headers: {
+            Authorization:'Bearer ' + state.user.token
+          }
+        })
+        .then(function(response){
+          commit('setStatus', 'deleted');
+          resolve(response);
+        })
+        .catch(function(error){
+          commit('setStatus', 'error');
+          reject(error);
+        })
+      })   
+    },
+    postCommentaire: ({commit, state}, userCommentaire) => {
+      commit('setStatus', 'commentaireLoading');
+      return new Promise((resolve, reject) => {
+        instance.post('commentaires/post', userCommentaire, {
+          headers: {
+              Authorization:'Bearer ' + state.user.token
+          }, 
+        })
+        .then(function(response){
+          commit('setStatus', 'created');
+          resolve(response);
+        })
+        .catch(function(error){
+          commit('setStatus', 'error');
+          reject(error);
+        })
+      })
+    },
   },
   modules: {
   }

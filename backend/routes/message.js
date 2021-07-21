@@ -10,6 +10,7 @@ const auth = require('../middleware/auth');
 
 router.get('/allmessages', auth,  messageCtrl.allMessages);
 router.post('/post', auth, messageCtrl.createMessage )
+router.post('/delete', auth, messageCtrl.deleteMessage)
 
 
 module.exports = router;

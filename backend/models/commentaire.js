@@ -1,18 +1,22 @@
 const Sequelize = require('sequelize');
 require('../db/mysql');
 
-module.exports = sequelize.define('Message', {
+module.exports = sequelize.define('Commentaire', {
     id: {
         type: Sequelize.INTEGER(11),
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
     },
-    userID: {
+    userId: {
         type: Sequelize.INTEGER(11),
         allowNull: false,
     },
-    post: {
+    postId: {
+        type: Sequelize.INTEGER(11),
+        allowNull: false,
+    },
+    commentaire: {
         type: Sequelize.STRING(255),
         allowNull: false,
     },
