@@ -1,7 +1,9 @@
 const express = require('express');
 const userRoutes = require('./routes/user');
-const messageRoutes = require('./routes/message');
-const commentaireRoutes = require('./routes/commentaire');
+const postRoutes = require('./routes/post');
+const commentRoutes = require('./routes/comment');
+const path = require('path');
+
 
 const app = express();
 
@@ -18,11 +20,11 @@ app.use(express.urlencoded({
 }));
 
 app.use('/api/auth', userRoutes);
-app.use('/api/messages', messageRoutes)
-app.use('/api/commentaires', commentaireRoutes)
+app.use('/api/post', postRoutes);
+app.use('/api/comment', commentRoutes);
 
-
-
+// Initialisation de la route des images
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 
 module.exports = app;

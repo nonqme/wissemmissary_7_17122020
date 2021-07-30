@@ -13,39 +13,38 @@
         <a class="mb-3 fw-normal" @click="switchToLogin()">Se connecter</a>
       </div>  
 
-      <div class="form-floating"> 
-        <input type="text" class="form-control" v-model="user_login" placeholder="Login">
-        <label for="floatingInput">Login</label>
+      <div class="form-floating" v-if="mode == 'create'"> 
+        <input id="floatingPseudo" type="text" class="form-control" v-model="pseudo" placeholder="Login">
+        <label for="floatingPseudo">Pseudo</label>
       </div>
 
       <div class="form-floating">
-        <input type="password" class="form-control" v-model="user_password" placeholder="Password">
+        <input type="email" class="form-control" id="floatingEmail" v-model="email" placeholder="user@email.fr" required>
+        <label for="floatingEmail">Email</label>
+      </div>
+
+      <div class="form-floating">
+        <input type="password" class="form-control" v-model="password" placeholder="Password">
         <label for="floatingPassword">Password</label>
       </div>
 
       <div class="form-floating" v-if="mode == 'create'">
-        <input type="password" class="form-control" v-model="user_confirmpassword" id="floatingPasswordConfirm" placeholder="Password" required>
+        <input type="password" class="form-control" v-model="confirmpassword" id="floatingPasswordConfirm" placeholder="Password" required>
         <label for="floatingPasswordConfirm">Confirmez votre password</label>
       </div>
 
       <div class="form-floating" v-if="mode == 'create'">
-        <input type="email" class="form-control" id="floatingEmail" v-model="user_email" placeholder="user@email.fr" required>
-        <label for="floatingEmail">Email</label>
+        <input type="text" class="form-control" v-model="nom" id="floatingNom" placeholder="John" required>
+        <label for="floatingNom">Nom</label>
       </div>
 
       <div class="form-floating" v-if="mode == 'create'">
-        <input type="text" class="form-control" v-model="user_firstname" id="floatingFirstname" placeholder="John" required>
-        <label for="floatingFirstname">Prénom</label>
+        <input type="text" class="form-control" v-model="prenom" id="floatingPrenom" placeholder="Doe" required>
+        <label for="floatingPrenom">Prénom</label>
       </div>
 
       <div class="form-floating" v-if="mode == 'create'">
-        <input type="text" class="form-control" v-model="user_lastname" id="floatingLastname" placeholder="Doe" required>
-        <label for="floatingLastname">Nom</label>
-      </div>
-
-      <div class="form-floating" v-if="mode == 'create'">
-        <input type="date" class="form-control" v-model="user_birthdate" id="floatingBirthDate" placeholder="01/01/1900" required>
-        <label for="floatingBirthDate">Date de naissance</label>
+        <input ref="file" type="file" accept="image/png, image/jpeg, image/bmp, image/gif" class="form-control" id="floatingFile" name="image" v-on:change="handleFileUpload">
       </div>
 
       <div class="checkbox mb-3" v-else>
@@ -77,13 +76,13 @@ export default {
   data: function() {
     return {
       mode:'login',
-      user_login:'',
-      user_password:'',
-      user_confirmpassword:'',
-      user_email:'',
-      user_firstname:'',
-      user_lastname:'',
-      user_birthdate:'',
+      pseudo:'',
+      password:'',
+      confirmpassword:'',
+      email:'',
+      nom:'',
+      prenom:'',
+      file: null,
       checked:false,
       err:'',
     }
@@ -97,13 +96,13 @@ export default {
   computed: {
     isDisabled: function () {
       if (this.mode == 'create') {
-        if (this.user_login != "" && this.user_password != "" && this.user_email != "" && this.user_firstname != "" && this.user_lastname != "" && this.user_birthdate != "") {
+        if (this.pseudo != "" && this.password != "" && this.email != "" && this.nom != "" && this.prenom != "" && this.confirmpassword != "") {
           return false;
         } else {
           return true;
         }
       } else {
-        if (this.user_login != "" && this.user_password != "") {
+        if (this.login != "" && this.password != "") {
           return false;
         } else {
           return true;
@@ -120,21 +119,24 @@ export default {
       this.mode = 'login';
     },
     createAccount: function() {
-      if (this.user_confirmpassword === this.user_password) {
-        this.$store.dispatch('createAccount', {
-          user_login: this.user_login,
-          user_password: this.user_password,
-          user_email: this.user_email,
-          user_firstname: this.user_firstname,
-          user_lastname: this.user_lastname,
-          user_birthdate: this.user_birthdate,
-        }).then(response =>{
+      const fd = new FormData();
+      fd.append('pseudo', this.pseudo)
+      fd.append('email', this.email)
+      fd.append('password', this.password)
+      fd.append('prenom', this.prenom)
+      fd.append('nom', this.nom)
+      if (this.file !== null) {
+        fd.append('image', this.file, this.file.name)
+      }
+      if (this.confirmpassword === this.password) {
+        this.$store.dispatch('createAccount', fd)
+        .then(response =>{
           this.mode = 'login',
           console.log(response)
         }).catch(error => {
           console.log(error)
-          this.user_password = '';
-          this.user_login = '';
+          this.password = '';
+          this.email = '';
           this.err = error.response.data.error
         })
       } else {
@@ -148,18 +150,22 @@ export default {
           this.$store.commit('setStorage', true)
       }
       this.$store.dispatch('login', {
-        user_login: this.user_login,
-        user_password: this.user_password,
+        email: this.email,
+        password: this.password,
       }).then(response =>{
-        this.$router.push('/Home');
+        this.$router.push('/profile');
         console.log(response)
       }).catch(error => {
         console.log(error)
-        this.user_password = '';
-        this.user_login = '';
+        this.password = '';
+        this.email = '';
         this.$store.commit('setStorage', false)
         this.err = error.response.data.error
       })
+    },
+    handleFileUpload(){
+      this.file = this.$refs.file.files[0]
+      console.log(this.file)
     }
   }
 
@@ -169,7 +175,7 @@ export default {
 <style>
   .form-signin {
     width: 100%;
-    max-width: 330px;
+    max-width: 350px;
     padding: 15px;
     margin: auto;
   }
@@ -193,5 +199,10 @@ export default {
     margin-bottom: -1px;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+  }
+
+  #floatingFile {
+    margin-top:10px;
+    margin-bottom: 10px;
   }
 </style>

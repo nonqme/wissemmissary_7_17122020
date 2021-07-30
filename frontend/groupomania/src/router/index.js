@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Login from '../views/Login.vue'
-import Home from '../views/Home.vue'
-import Settings from '../views/Settings.vue'
+import Profile from '../views/Profile.vue'
+import Post from '../views/Post.vue'
 
 const routes = [
   {
@@ -10,14 +10,14 @@ const routes = [
     component: Login
   },
   {
-    path: '/home',
-    name: 'Home',
-    component: Home
+    path: '/profile',
+    name: 'Profile',
+    component: Profile
   },
   {
-    path: '/settings',
-    name: 'Settings',
-    component: Settings
+    path: '/posts',
+    name: 'Post',
+    component: Post
   },
 ]
 

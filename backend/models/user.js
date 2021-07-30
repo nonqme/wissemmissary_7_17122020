@@ -1,46 +1,63 @@
-const Sequelize = require('sequelize');
-require('../db/mysql');
-
-module.exports = sequelize.define('User', {
-    id: {
-        type: Sequelize.INTEGER(11),
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
+'use strict';
+const {
+  Model
+} = require('sequelize');
+module.exports = (sequelize, DataTypes) => {
+  class User extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate({ Post, Comment }) {
+      this.hasMany(Post, { foreignKey: 'userId'})
+      this.hasMany(Comment, { foreignkey:'userId', as:'test'})
+    }
+    toJSON() {
+      return { ...this.get(), password: undefined}
+    }
+  };
+  User.init({
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: {
+          args: true,
+      }
     },
-    user_login: {
-        type: Sequelize.STRING(20),
-        allowNull: false,
-        unique: {
-            args: true,
-        }
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    user_password: {
-        type: Sequelize.STRING(60),
-        allowNull: false,
+    pseudo: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: {
+          args: true,
+      }
     },
-    user_email: {
-        type: Sequelize.STRING(60),
-        allowNull: false,
-        unique: {
-            args: true,
-        }
+    nom: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    user_firstname: {
-        type: Sequelize.STRING(30),
-        allowNull: false,
+    prenom: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    user_lastname: {
-        type: Sequelize.STRING(30),
-        allowNull: false,
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    user_birthdate: {
-        type: Sequelize.DATE,
-        allowNull: true,
-    },
-},
-{
+    imageUrl: {
+      type: DataTypes.STRING,
+      allowNull: true
+    }
+  }, {
+    sequelize,
+    tableName: 'users',
+    modelName: 'User',
     createdAt: false,
     updatedAt: false,
-})
-
+  });
+  return User;
+};

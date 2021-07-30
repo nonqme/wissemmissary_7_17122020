@@ -7,19 +7,29 @@ const instance = axios.create({
 
 
 let user = (localStorage.getItem('user') || sessionStorage.getItem('user'))
-if (!user) {
+let now = new Date().getTime();
+let setupTime = localStorage.getItem('expire')
+if (!user || setupTime == null) {
+
   user = {
    id: -1,
    token: '',
-   login:'',
+   pseudo:'',
    email:'',
-   firstname:'',
-   lastname:'',
-   date: '',
-   fullname:''
+   nom:'',
+   prenom:'',
+   imageUrl:'',
+   role:'',
   };
 } else {
+    if (now-setupTime > 23*60*60*1000) {
+      console.log('PAS Good Timer')
+      localStorage.clear()
+    }
+  else {
+    console.log('Good Timer')
     user = JSON.parse(user)
+  }  
 }
 
 
@@ -38,16 +48,13 @@ export default createStore({
     },
     logUser: function (state, user) {
       state.user = user;
-      user.fullname = user.firstname + ' ' + user.lastname;
-      console.log(user.fullname)
       sessionStorage.setItem('user', JSON.stringify(user));
     },
     logUserRemind: function(state, user) {
       state.user = user;
       localStorage.setItem('user', JSON.stringify(user));
-    },
-    setFullName: function (state, userFullName) {
-      state.user.fullname = userFullName
+      let now = new Date().getTime()
+      localStorage.setItem('expire', now)
     },
     logOut: function(state) {
       state.user = {
@@ -70,7 +77,6 @@ export default createStore({
             commit('logUser', response.data);
           }
           commit('setStatus', '');
-          commit('setFullName', response.data.firstname + ' ' + response.data.lastname )
           resolve(response);
         })
         .catch(function (error) {
@@ -79,10 +85,10 @@ export default createStore({
         });
       });
     },
-    createAccount: ({commit}, userInfos) => {
+    createAccount: ({commit}, formData) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
-        instance.post('/auth/signup', userInfos)
+        instance.post('/auth/create', formData)
         .then(function(response){
           commit('setStatus', 'created');
           resolve(response);
@@ -94,14 +100,14 @@ export default createStore({
 
       })
     },
-    postMessage: ({commit, state}, userMessage) => {
+    modifyAccount: ({commit, state}, formData) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
-        instance.post('messages/post', userMessage, {
+        instance.put(`/auth/update/${state.user.id}`, formData, {
           headers: {
-              Authorization:'Bearer ' + state.user.token
-          }, 
-        })
+            Authorization:'Bearer ' + state.user.token
+          }
+        })  
         .then(function(response){
           commit('setStatus', 'created');
           resolve(response);
@@ -112,37 +118,15 @@ export default createStore({
         })
       })
     },
-    getMyMessages: ({commit, state}) => {
-      commit('setStatus', 'messagesLoading');
-      return new Promise((resolve, reject) => {
-        instance.get('messages/allmessages', {
-          headers: {
-            Authorization:'Bearer ' + state.user.token
-          },
-          params: {
-            id: state.user.id
-          },   
-        })
-        .then(function(response){
-          commit('setStatus', 'messagesLoaded');
-          console.log(response)
-          resolve(response);
-        })
-        .catch(function(error){
-          commit('setStatus', 'messagesError');
-          reject(error);
-        })
-      })      
-    },
     deleteAccount: ({commit, state}) => {
       commit('setStatus', 'Loading');
       return new Promise((resolve, reject) => {
-        instance({
-          method: 'post',
-          url:'/auth/delete/',
-          params: { id: state.user.id },  
+        instance.delete(`/auth/delete/${state.user.id}`, {
           headers: {
             Authorization:'Bearer ' + state.user.token
+          },
+          data: {
+            id: state.user.id
           }
         })
         .then(function(response){
@@ -156,16 +140,103 @@ export default createStore({
         })
       })   
     },
-    deleteMessage: ({commit, state}, messageInfo) => {
-      commit('setStatus', 'deleting');
+    getMyPosts: ({commit, state }) => {
+      commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
-        instance({
-          method: 'post',
-          url:'/messages/delete/',
-          params: { id: messageInfo },  
+        instance.get(`/post/myposts/${state.user.id}`, {
+          headers: {
+            Authorization:'Bearer ' + state.user.token
+          },
+          params: {
+            id: state.user.id
+          },   
+        }) 
+        .then(function (response) {
+          commit('setStatus', 'postsLoaded');
+          resolve(response);
+        })
+        .catch(function (error) {
+          commit('setStatus', 'error');
+          reject(error);
+        });
+      });
+    },
+    getAllPosts: ({commit, state }) => {
+      commit('setStatus', 'loading');
+      return new Promise((resolve, reject) => {
+        instance.get(`/post/allposts/${state.user.id}`, {
+          headers: {
+            Authorization:'Bearer ' + state.user.token
+          },
+          params: {
+            id: state.user.id
+          }, 
+        }) 
+        .then(function (response) {
+          commit('setStatus', 'postsLoaded');
+          resolve(response);
+        })
+        .catch(function (error) {
+          commit('setStatus', 'error');
+          reject(error);
+        });
+      });
+    },
+    createPost: ({commit, state}, formData) => {
+      commit('setStatus', 'loading');
+      return new Promise((resolve, reject) => {
+        instance.post(`/post/create/${state.user.id}`, formData, {
           headers: {
             Authorization:'Bearer ' + state.user.token
           }
+        })
+        .then(function(response){
+          commit('setStatus', 'created');
+          resolve(response);
+        })
+        .catch(function(error){
+          commit('setStatus', 'error');
+          reject(error);
+        })
+      })
+    },
+    modifyPost: ({commit, state}, {id, fd}) => {
+      commit('setStatus', 'modifying');
+      console.log(id)
+      console.log(fd)
+
+      return new Promise((resolve, reject) => {
+        instance.put(`/post/update/${id}`, fd, {
+          headers: {
+            Authorization:'Bearer ' + state.user.token
+          },
+          params: {
+            id: state.user.id
+          }, 
+        })  
+        .then(function(response){
+          commit('setStatus', 'modified');
+          resolve(response);
+        })
+        .catch(function(error){
+          commit('setStatus', 'error');
+          reject(error);
+        })
+      })
+    },
+    deletePost: ({commit, state}, id) => {
+      commit('setStatus', 'Loading');
+      return new Promise((resolve, reject) => {
+        instance.delete(`/post/delete/${id}`, {
+          headers: {
+            Authorization:'Bearer ' + state.user.token
+          },
+          data: {
+            userId: state.user.id
+          },
+          params: {
+            id: state.user.id
+          }, 
         })
         .then(function(response){
           commit('setStatus', 'deleted');
@@ -177,14 +248,16 @@ export default createStore({
         })
       })   
     },
-    postCommentaire: ({commit, state}, userCommentaire) => {
-      commit('setStatus', 'commentaireLoading');
+    createComment: ({commit, state}, commentInfo) => {
+      console.log(commentInfo, 'test222') 
+      commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
-        instance.post('commentaires/post', userCommentaire, {
+        instance.post(`/comment/create/${state.user.id}`, commentInfo, {
           headers: {
-              Authorization:'Bearer ' + state.user.token
-          }, 
+            Authorization:'Bearer ' + state.user.token
+          }
         })
+        
         .then(function(response){
           commit('setStatus', 'created');
           resolve(response);
@@ -194,6 +267,52 @@ export default createStore({
           reject(error);
         })
       })
+    },
+    modifyComment: ({commit, state}, body) => {
+      console.log(body, 'test')
+      commit('setStatus', 'modifying');
+      return new Promise((resolve, reject) => {
+        instance.put(`/comment/update/${body.commentId}`, body, {
+          headers: {
+            Authorization:'Bearer ' + state.user.token
+          },
+          params: {
+            id: state.user.id
+          }, 
+        })  
+        .then(function(response){
+          commit('setStatus', 'modified');
+          resolve(response);
+        })
+        .catch(function(error){
+          commit('setStatus', 'error');
+          reject(error);
+        })
+      })
+    },
+    deleteComment: ({commit, state}, id) => {
+      commit('setStatus', 'Loading');
+      return new Promise((resolve, reject) => {
+        instance.delete(`/comment/delete/${id}`, {
+          headers: {
+            Authorization:'Bearer ' + state.user.token
+          },
+          data: {
+            userId: state.user.id
+          },
+          params: {
+            id: state.user.id
+          }, 
+        })
+        .then(function(response){
+          commit('setStatus', 'deleted');
+          resolve(response);
+        })
+        .catch(function(error){
+          commit('setStatus', 'error');
+          reject(error);
+        })
+      })   
     },
   },
   modules: {
