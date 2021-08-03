@@ -202,9 +202,6 @@ export default createStore({
     },
     modifyPost: ({commit, state}, {id, fd}) => {
       commit('setStatus', 'modifying');
-      console.log(id)
-      console.log(fd)
-
       return new Promise((resolve, reject) => {
         instance.put(`/post/update/${id}`, fd, {
           headers: {
@@ -224,10 +221,10 @@ export default createStore({
         })
       })
     },
-    deletePost: ({commit, state}, id) => {
+    deletePost: ({commit, state}, postInfo) => {
       commit('setStatus', 'Loading');
       return new Promise((resolve, reject) => {
-        instance.delete(`/post/delete/${id}`, {
+        instance.delete(`/post/delete/${postInfo.postId}`, {
           headers: {
             Authorization:'Bearer ' + state.user.token
           },
@@ -235,7 +232,7 @@ export default createStore({
             userId: state.user.id
           },
           params: {
-            id: state.user.id
+            userId: postInfo.userId
           }, 
         })
         .then(function(response){
@@ -247,6 +244,27 @@ export default createStore({
           reject(error);
         })
       })   
+    },
+    likePost: ({commit, state }, likeInfo) => {
+      commit('setStatus', 'loading');
+      return new Promise((resolve, reject) => {
+        instance.post(`/post/like/${likeInfo.postId}`, likeInfo, {
+          headers: {
+            Authorization:'Bearer ' + state.user.token
+          },
+          params: {
+            userId: state.user.id
+          }, 
+        })
+        .then(function (response) {
+          commit('setStatus', 'loaded');
+          resolve(response);
+        })
+        .catch(function (error) {
+          commit('setStatus', 'error');
+          reject(error);
+        });
+      });
     },
     createComment: ({commit, state}, commentInfo) => {
       console.log(commentInfo, 'test222') 
@@ -277,7 +295,7 @@ export default createStore({
             Authorization:'Bearer ' + state.user.token
           },
           params: {
-            id: state.user.id
+            userId: state.user.id
           }, 
         })  
         .then(function(response){

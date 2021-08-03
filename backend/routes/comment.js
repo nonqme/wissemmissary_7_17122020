@@ -11,6 +11,6 @@ const auth = require('../middleware/auth');
 // Création de la route Login avec le middleware limiter
 router.post('/create/:id', auth.body , commentCtrl.createComment);
 router.delete('/delete/:id', auth.bodyUserIdQuery , commentCtrl.deleteComment)
-router.put('/update/:id', commentCtrl.updateComment)
+router.put('/update/:id', auth.bodyUserIdQuery, commentCtrl.updateComment)
 
 module.exports = router;

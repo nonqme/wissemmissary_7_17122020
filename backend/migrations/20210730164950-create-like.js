@@ -1,29 +1,20 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, DataTypes) => {
-    await queryInterface.createTable('posts', {
+    await queryInterface.createTable('likes', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: DataTypes.INTEGER
       },
-      userId: {
+      postId:{
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      body: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      bodyImageUrl: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
-      like: {
+      userId:{
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue:0
       },
       createdAt: {
         allowNull: false,
@@ -35,7 +26,7 @@ module.exports = {
       }
     });
   },
-  down: async (queryInterface, DataTypes) => {
-    await queryInterface.dropTable('posts');
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.dropTable('likes');
   }
 };

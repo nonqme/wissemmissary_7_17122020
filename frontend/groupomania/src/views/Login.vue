@@ -135,6 +135,7 @@ export default {
           console.log(response)
         }).catch(error => {
           console.log(error)
+          this.$refs.file.value=null;
           this.password = '';
           this.email = '';
           this.err = error.response.data.error

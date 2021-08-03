@@ -1,16 +1,18 @@
-const { Post, Comment, User } = require('../models/');
+const { Post, Comment, User, Like } = require('../models/');
 const Op = require('sequelize').Op;
 const fs = require("fs");
 
 
 exports.createPost = (req, res, next) => {
-    let imageUrl;
-    if (req.file) {
-      imageUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
-    }
-    else {
-      imageUrl = null;
-    }
+  let imageUrl;
+  if (req.file) {
+    imageUrl = `${req.protocol}://${req.get("host")}/images/${req.file.filename}`;
+  }
+  else {
+    imageUrl = null;
+  }
+  console.log(imageUrl)
+  console.log(req.file)
     Post.create({
       userId: req.body.userId,
       body: req.body.body,
@@ -18,38 +20,38 @@ exports.createPost = (req, res, next) => {
     })
     .then(() => res.status(201).json({ message: 'Post crée!' }))
     .catch(error => {
-        const filename = imageUrl.split("/images/")[1];
-        if (req.file) {
+        if (req.file !== undefined) {
+          const filename = imageUrl.split("/images/")[1];
             fs.unlink(`images/${filename}`, () => {
               console.log('Image supprimée')
             });
           }
-        res.status(500).json({ error })
-    });
+        res.status(500).json({ error: error.message })
+    }) 
 };
 
 exports.getAllPost = (req, res, next) => {
     Post.findAll({
       where:{ userId: { [Op.ne]: req.params.id }},
        include: 
-        ['user', {model:Comment, as:'comments', include:[{model: User, as: 'commentUser'}]}]
+        ['user', 'likes', {model:Comment, as:'comments', include:[{model: User, as: 'commentUser'}]}]
     }) 
     .then(posts => res.status(200).json({ message:'Voila les posts', posts }))
     .catch(error => { 
       console.log(error)
-        res.status(500).json({ error })
+        res.status(500).json({ error: error.message })
     });
 };
 
 exports.getMyPost = (req, res, next) => {
   Post.findAll({ where: { userId: req.params.id },
     include: 
-     ['user', {model:Comment, as:'comments', include:[{model: User, as: 'commentUser'}]}]
+     ['user','likes', {model:Comment, as:'comments', include:[{model: User, as: 'commentUser'}]}]
  }) 
   .then(posts => res.status(200).json({ message:'Voila les posts', posts }))
   .catch(error => {
     console.log(error)
-      res.status(500).json({ error })
+      res.status(500).json({ error: error.message })
   });
 };
 
@@ -85,7 +87,7 @@ exports.updatePost = (req, res) => {
     })
     })
     .catch(error => { 
-      res.status(400).json({ error })
+      res.status(400).json({ error: error.message })
       console.log(bodyImageUrl)
       if (bodyImageUrl !== null) {
         const filename = bodyImageUrl.split("/images")[1];
@@ -100,26 +102,89 @@ exports.updatePost = (req, res) => {
     });
   })
   .catch(error => {
-    res.status(500).json({error})
+    res.status(500).json({error: error.message})
   })
 }
 
 exports.deletePost = (req, res) => {
-  Post.findOne({ where: { id: req.params.id }})
-  .then(post => {
-    console.log(post.bodyImageUrl)
-    if (post.bodyImageUrl !== null) {
-      const filename = post.bodyImageUrl.split("/images")[1];
-      fs.unlink(`images/${filename}`, () => {
-        Post.destroy({ where: { id: req.params.id} })
-        .then(() => res.status(200).json({ message: "utilisateur supprimé" }))
-        .catch(error => res.status(500).json({ error }));
-      });
-    } else {
-      Post.destroy({ where: { id: req.params.id} })
-      .then(() => res.status(200).json({ message: "utilisateur supprimé" }))
-      .catch(error => res.status(500).json({ error }));
-    }
+  Like.destroy({ where: { postId: req.params.id}})
+  .then(() => {
+    Comment.findAll({ where: { postId: req.params.id }})
+    .then(() => {
+      Comment.destroy({ where: { postId: req.params.id} })
+      .then(() => {
+        Post.findOne({ where: { id: req.params.id }})
+        .then(post => {
+          console.log(post.bodyImageUrl)
+          if (post.bodyImageUrl !== null) {
+            const filename = post.bodyImageUrl.split("/images")[1];
+            fs.unlink(`images/${filename}`, () => {
+              Post.destroy({ where: { id: req.params.id} })
+              .then(() => res.status(200).json({ message: "Post supprimé" }))
+              .catch(error => res.status(500).json({ error: error.message }));
+            });
+          } else {
+            Post.destroy({ where: { id: req.params.id} })
+            .then(() => res.status(200).json({ message: "Post supprimé" }))
+            .catch(error => res.status(500).json({ error: error.message }));
+          }
+        })
+    .catch(error => res.status(500).json({ error: error.message }));
+      })
+      .catch(error => res.status(400).json({ error: error.message }));
+    })
+    .catch(error => res.status(400).json({ error: error.message }))
   })
-  .catch(error => res.status(500).json({ error }));
-};
+  .catch(error => res.status(400).json({ error: error.message }))
+}
+
+
+exports.likePost = (req, res) => {
+  if (req.body.like == 1) {
+    Like.findOne({ where: { postId: req.params.id, userId: req.body.userId }})
+    .then(like => {
+      console.log(like)
+      if (like === null) {
+        Like.create({
+          userId: req.body.userId,
+          postId: req.params.id,
+        })
+        .then(() => {
+          Post.increment('like',{ by:1, where: {id: req.params.id}})
+          .then(() => res.status(200).json({message:"Like!"}))
+          .catch(error => res.status(400).json({error: error.message }))
+        })
+        .catch(error =>{ 
+          console.log(error)
+          res.status(400).json({ error: error.message })
+      })
+      } else {
+        res.status(400).json({ message: "Vous avez déjà like ou dislike"})
+      }
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(500).json({ error: error.message})
+    })
+  } else if (req.body.like == 0) {
+    console.log('je suis ici normalement')
+    Like.findOne({ where: { postId: req.params.id, userId: req.body.userId }})
+    .then(like => {
+      if (like) {
+        Like.destroy({ where: { postId: req.params.id, userId: req.body.userId }})
+        .then(() => {
+          Post.decrement('like',{ by:1, where: {id: req.params.id}})
+          .then(() => res.status(200).json({message:"Like enlevé"}))
+          .catch(error => res.status(400).json({error: error.message }))
+        })
+        .catch(error => res.status(400).json({ error: error.message }))
+      } else {
+        res.status(400).json({message:"Vous n'avez pas like"})
+      }
+    })
+    .catch(error => {
+      console.log(error)
+      res.status(500).json({ error: error.message})
+    })
+  }
+}

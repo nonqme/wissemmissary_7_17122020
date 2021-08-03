@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(Comment, { foreignKey: 'userId', as: 'commentUser'})
     }
     toJSON() {
-      return { ...this.get(), password: undefined}
+      return { ...this.get(), password: undefined, role: undefined, nom: undefined, prenom: undefined, email: undefined}
     }
   };
   User.init({
@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: {
           args: true,
-      }
+      },
     },
     password: {
       type: DataTypes.STRING,
@@ -34,23 +34,44 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: {
           args: true,
+      },
+      validate: {
+        isAlpha: {
+          args:true,
+          msg:'Charactère non autorisé dans le pseudo',
+        },
       }
     },
     nom: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isAlpha: {
+          args:true,
+          msg:'Charactère non autorisé dans le nom',
+        },
+      }
     },
     prenom: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isAlpha: {
+          args:true,
+          msg:'Charactère non autorisé dans le prénom',
+        },
+      }
     },
     role: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isAlpha: true,
+      }
     },
     imageUrl: {
       type: DataTypes.STRING,
-      allowNull: true
+      allowNull: true,
     }
   }, {
     sequelize,

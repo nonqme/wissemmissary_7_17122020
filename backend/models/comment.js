@@ -13,12 +13,25 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(Post, { foreignKey: 'postId' })
       this.belongsTo(User, { foreignKey: 'userId', as: 'commentUser'})
     }
+    toJSON() {
+      return { ...this.get(), password: undefined, role: undefined, nom: undefined, prenom: undefined, email: undefined}
+    }
     
   };
   Comment.init({
     bodyComment: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      validate: {
+        is: {
+          args: /^(?! )[ À-ÿ0-9A-Za-z?!')(-]*(?<! )$/,
+          msg:'Charactère non autorisé'
+        },
+        notEmpty: {
+          args: true,
+          msg:'Veuillez remplir le champ de texte'
+        },
+      }
     },
     userId: {
       type: DataTypes.INTEGER,
