@@ -2,7 +2,7 @@
     <header>
         <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
             <div class="container-fluid">
-                <router-link to="/" class="navbar-brand">Accueil</router-link>
+                <router-link to="/" class="navbar-brand"><img class="navbar-img" src='../assets/icon-left-font-monochrome-white.svg'></router-link>
                 <div>
                     <ul class="navbar-nav me-auto mb-2 mb-md-0">
                         <li class="nav-item">
@@ -34,5 +34,9 @@ export default {
 </script>
 
 <style>
+
+.navbar-img{
+    max-width: 150px;
+}
 
 </style>

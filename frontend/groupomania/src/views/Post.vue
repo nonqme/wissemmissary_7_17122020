@@ -10,11 +10,11 @@
             <a class="mb-3 fw-normal" @click="switchToMyMessages()">Mes Messages</a>
         </div>
 
-        <div class="container-fluid col-5" v-if="mode == 'mymessages'">
+        <div class="container-fluid col-5 post-txtarea" v-if="mode == 'mymessages'">
             <form v-on:submit.prevent class="card-body">
                 <label class="sr-only" for="post">Post</label>
-                <textarea v-model="newbody" class="form-control" id="post" rows="3" placeholder="What are you thinking?"></textarea>
-                <input ref="file" type="file" accept="image/png, image/jpeg, image/bmp, image/gif" class="form-control" id="floatingFile" name="image" v-on:change="handleFileUpload">
+                <textarea v-model="newbody" class="form-control post-txtarea" id="post" rows="3" placeholder="What are you thinking?"></textarea>
+                <input ref="file" type="file" accept="image/png, image/jpeg, image/bmp, image/gif" class="form-control post-txtarea" id="floatingFile" name="image" v-on:change="handleFileUpload">
                 <button @click="createPost()" type="submit" class="btn btn-primary" :disabled='isDisabled'>
                     <span v-if="status == 'loading'">En cours d'envoi</span>
                     <span v-else>Envoyer</span>
@@ -40,6 +40,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="form-floating" v-if="postmode == `modify${post.id}`">
                     <input type="text" class="form-control" v-model="body" id="floatingBody" placeholder="Doe" name='body' required>
                     <label for="floatingBody">Message</label>
@@ -54,7 +55,7 @@
                     <p class="card-text">
                         {{post.body}}
                     </p>
-                    <img v-if='post.bodyImageUrl !== null' v-bind:src="post.bodyImageUrl">
+                    <img v-if='post.bodyImageUrl !== null' class="post-img" v-bind:src="post.bodyImageUrl">
                     <p>Likes:{{post.like}}</p>
                     <div v-if="(post.likes.map(like => like.postId).includes(post.id) === true) && (post.likes.map(like => like.userId).includes(this.$store.state.user.id) === true)">
                         <i class="fas fa-heart red" @click="dislikePost(post.id)"></i>
@@ -65,7 +66,7 @@
                 </div>
 
                 <div v-if="postmode == `modify${post.id}`" class="btn-space">
-                    <button @click="modifyPost(post.id)" type="submit" class="btn btn-primary">
+                    <button @click="modifyPost(post.id, post.body)" type="submit" class="btn btn-primary">
                         <span v-if="status == 'modifying'">En cours de modification</span>
                         <span v-else>Valider</span>
                     </button>
@@ -87,6 +88,7 @@
                         </button>
                     </div>
                 </div>
+
                 <div class="container-fluid">
                     <form v-on:submit.prevent class="card-body">
                         <label class="sr-only" for="post">Commentaire</label>
@@ -97,6 +99,7 @@
                         </button>
                     </form>
                 </div>
+
                 <div v-if="posts.length !== 0 || post.comments.length !== 0">
                     <div v-for="comment in post.comments.slice().reverse()" :key="comment.id" class="card">
                         <h1>@{{comment.commentUser.pseudo}}</h1>
@@ -113,10 +116,12 @@
                                 </button>
                             </div>
                         </div>
+
                         <div class="form-floating" v-if="commentmode == `modify${comment.id}`">
                             <input type="text" class="form-control" v-model="modifycomment[comment.id]" id="floatingBody" placeholder="Doe" name='body' required>
                             <label for="floatingBody">Message</label>
                         </div>
+
                         <div v-if="commentmode == `modify${comment.id}`" class="btn-space">
                             <button @click="modifyComment(comment.id)" type="submit" class="btn btn-primary">
                                 <span v-if="status == 'modifying'">En cours de modification</span>
@@ -126,7 +131,8 @@
                                 <span v-if="status == 'modifying'">En cours de modification</span>
                                 <span v-else>Annuler</span>
                             </button>
-                        </div>  
+                        </div> 
+                         
                     </div>
                 </div>               
             </article>
@@ -159,7 +165,7 @@
                     <p class="card-text">
                         {{post.body}}
                     </p>
-                    <img v-if='post.bodyImageUrl !== null' v-bind:src="post.bodyImageUrl">
+                    <img v-if='post.bodyImageUrl !== null' v-bind:src="post.bodyImageUrl" class="post-img">
                     <p>Likes:{{post.like}}</p>
                     <div v-if="(post.likes.map(like => like.postId).includes(post.id) === true) && (post.likes.map(like => like.userId).includes(this.$store.state.user.id) === true)">
                         <i class="fas fa-heart red" @click="dislikePost(post.id)"></i>
@@ -341,8 +347,11 @@ export default {
             this.err = error.response.data.error
         }) 
     },
-    modifyPost: function(id) {
+    modifyPost: function(id, body) {
         const fd = new FormData();
+        if (this.body === '') {
+            this.body = body
+        }
         fd.append('body', this.body)
         fd.append('userId', this.$store.state.user.id)
         if (this.file !== null) {   
@@ -350,6 +359,8 @@ export default {
         }
         this.$store.dispatch('modifyPost', {id, fd})
         .then(() =>{
+            this.body = '';
+            this.file = null;
             this.postmode = 'view';
             if (this.mode == 'mymessages') {
                 this.$store.dispatch('getMyPosts')
@@ -369,7 +380,8 @@ export default {
             })
         }       
       }).catch(error => {
-        this.body = ''
+        this.body = '';
+        this.file = null;
         console.log(error)
         this.err = error.response.data.error
       })
@@ -554,7 +566,7 @@ export default {
 .card {
     margin: auto;
     margin-bottom: 10px;
-    width: 700px;
+    max-width: 700px;
     display: block;
 }
 .btn-space{
@@ -567,5 +579,13 @@ export default {
 
 .fa-heart {
     cursor: pointer;
+}
+.post-txtarea {
+    width: 100%;
+    max-width: 800px;
+}
+
+.post-img {
+    max-width: 300px;
 }
 </style>

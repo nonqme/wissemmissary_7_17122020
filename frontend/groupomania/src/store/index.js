@@ -62,6 +62,7 @@ export default createStore({
         token:'',
       }
       localStorage.removeItem('user');
+      localStorage.removeItem('expire')
       sessionStorage.removeItem('user');
     }
   },

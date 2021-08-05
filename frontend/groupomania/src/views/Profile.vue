@@ -5,7 +5,7 @@
   <p>{{pseudo}}</p>
   <p>{{nom}}</p>
   <p>{{prenom}}</p>
-  <img v-bind:src="image">
+  <img class='profile-img' v-bind:src="image">
   <form class="form-signin" v-on:submit.prevent>
       <div class="form-floating d-flex justify-content-between" v-if="mode == 'view'">
         <a class="mb-3 fw-normal" @click="switchToModifyAccount()">Modifier mes informations</a>
@@ -146,5 +146,9 @@ export default {
 </script>
 
 <style>
+
+.profile-img {
+  max-width: 200px;
+}
 
 </style>

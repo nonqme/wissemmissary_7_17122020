@@ -1,6 +1,8 @@
 <template>
   <section>
     <form class="form-signin" v-on:submit.prevent>
+      
+      <img src="../assets/icon-left-font.svg" class="login-img">
       <h1 class="h3 mb-3 fw-normal" v-if="mode == 'login'">Connexion</h1>
       <h1 class="h3 mb-3 fw-normal" v-else>Inscription</h1>
       <div class="form-floating d-flex justify-content-between" v-if="mode == 'login'">
@@ -57,14 +59,18 @@
         <span v-if="status == 'loading'">Connexion en cours...</span>
         <span v-else>Connexion</span>
       </button>
+
       <button @click="createAccount()" class="w-100 btn btn-lg btn-primary" v-else :disabled='isDisabled'>
         <span v-if="status == 'loading'">Création en cours...</span>
         <span v-else>Créer mon compte</span>
       </button>
+
     </form>
+
       <div class="form-floating" v-if="status == 'error'">
         <p class="error__message">{{err}}</p>
       </div> 
+
   </section>
 </template>
 
@@ -89,7 +95,7 @@ export default {
   },
   mounted: function() {
     if (this.$store.state.user.id !== -1) {
-        this.$router.push('/Home');
+        this.$router.push('/posts');
         return;
     }
   },
@@ -130,17 +136,34 @@ export default {
       }
       if (this.confirmpassword === this.password) {
         this.$store.dispatch('createAccount', fd)
-        .then(response =>{
-          this.mode = 'login',
-          console.log(response)
+        .then(() => {
+          this.$refs.file.value=null;
+          this.password = '';
+          this.email = '';
+          this.confirmpassword = '';
+          this.prenom = '';
+          this.nom = '';
+          this.pseudo = '';
+          this.mode = 'login';
         }).catch(error => {
           console.log(error)
           this.$refs.file.value=null;
           this.password = '';
           this.email = '';
+          this.confirmpassword = '';
+          this.prenom = '';
+          this.nom = '';
+          this.pseudo = '';
           this.err = error.response.data.error
         })
       } else {
+          this.$refs.file.value=null;
+          this.password = '';
+          this.email = '';
+          this.confirmpassword = '';
+          this.prenom = '';
+          this.nom = '';
+          this.pseudo = '';
         this.err = 'Veuillez vérifier que votre mot de pass et la confirmation de mot de pass correspondent'
         this.$store.commit('setStatus', 'error')
 
@@ -153,9 +176,8 @@ export default {
       this.$store.dispatch('login', {
         email: this.email,
         password: this.password,
-      }).then(response =>{
+      }).then(() =>{
         this.$router.push('/profile');
-        console.log(response)
       }).catch(error => {
         console.log(error)
         this.password = '';
@@ -166,10 +188,8 @@ export default {
     },
     handleFileUpload(){
       this.file = this.$refs.file.files[0]
-      console.log(this.file)
     }
   }
-
 }
 </script>
 
@@ -205,5 +225,11 @@ export default {
   #floatingFile {
     margin-top:10px;
     margin-bottom: 10px;
+  }
+
+  .login-img {
+    margin-left: -50px;
+    margin-top: -100px;
+    margin-bottom: -100px;
   }
 </style>
