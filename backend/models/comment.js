@@ -10,8 +10,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate({Post, User}) {
-      this.belongsTo(Post, { foreignKey: 'postId' })
-      this.belongsTo(User, { foreignKey: 'userId', as: 'commentUser'})
+      this.belongsTo(Post, { foreignKey: 'postId', onDelete:'cascade', hooks: true})
+      this.belongsTo(User, { foreignKey: 'userId', as: 'commentUser', onDelete:'cascade', hooks: true})
     }
     toJSON() {
       return { ...this.get(), password: undefined, role: undefined, nom: undefined, prenom: undefined, email: undefined}

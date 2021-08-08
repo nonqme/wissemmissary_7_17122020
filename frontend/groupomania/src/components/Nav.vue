@@ -25,6 +25,7 @@
 export default {
     name:"Nav",
     methods: {
+        // Method de déconnexion
         logOut: function () {
             this.$store.commit('logOut');
             this.$router.push('/');

@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate({ User, Comment, Like }) {
       this.hasMany(Comment, {foreignKey: 'postId', as: 'comments'})
-      this.belongsTo(User, {foreignKey: 'userId', as: 'user' })
+      this.belongsTo(User, {foreignKey: 'userId', as: 'user', onDelete:'cascade', hooks: true })
       this.hasMany(Like, {foreignKey: 'postId', as: 'likes'})
     }
     toJSON() {
@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: {
         is: {
-          args: /^(?! )[ À-ÿ0-9A-Za-z?!')(-]*(?<! )$/,
+          args: /^(?! )[ À-ÿ0-9A-Za-z?!',)(-]*(?<! )$/,
           msg:'Charactère non autorisé'
         },
         notEmpty: {
@@ -50,6 +50,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     tableName: 'posts',
     modelName: 'Post',
+    onDelete:'cascade'
   });
   return Post;
 };

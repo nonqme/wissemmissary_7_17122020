@@ -1,8 +1,11 @@
+// Appel des models sequelize
 const { Post, Comment, User, Like } = require('../models/');
+// Appel du module Op de Sequelize
 const Op = require('sequelize').Op;
+// Appel de File system
 const fs = require("fs");
 
-
+// Création du controller createPost
 exports.createPost = (req, res, next) => {
   let imageUrl;
   if (req.file) {
@@ -11,8 +14,6 @@ exports.createPost = (req, res, next) => {
   else {
     imageUrl = null;
   }
-  console.log(imageUrl)
-  console.log(req.file)
     Post.create({
       userId: req.body.userId,
       body: req.body.body,
@@ -26,10 +27,11 @@ exports.createPost = (req, res, next) => {
               console.log('Image supprimée')
             });
           }
-        res.status(500).json({ error: error.message })
+        res.status(500).json({error: error.errors[0].message})
     }) 
 };
 
+// Création du controller getAllPost
 exports.getAllPost = (req, res, next) => {
     Post.findAll({
       where:{ userId: { [Op.ne]: req.params.id }},
@@ -39,10 +41,11 @@ exports.getAllPost = (req, res, next) => {
     .then(posts => res.status(200).json({ message:'Voila les posts', posts }))
     .catch(error => { 
       console.log(error)
-        res.status(500).json({ error: error.message })
+        res.status(500).json({ error: error.errors[0].message})
     });
 };
 
+// Création du controller getAllPost
 exports.getMyPost = (req, res, next) => {
   Post.findAll({ where: { userId: req.params.id },
     include: 
@@ -51,10 +54,11 @@ exports.getMyPost = (req, res, next) => {
   .then(posts => res.status(200).json({ message:'Voila les posts', posts }))
   .catch(error => {
     console.log(error)
-      res.status(500).json({ error: error.message })
+      res.status(500).json({ error: error.errors[0].message })
   });
 };
 
+// Création du controller updatePost
 exports.updatePost = (req, res) => {
   let bodyImageUrl;
   if (req.file) {
@@ -68,7 +72,6 @@ exports.updatePost = (req, res) => {
   .then(post => {
     if (post.bodyImageUrl !== null) {
       const filename = post.bodyImageUrl.split("/images/")[1];
-      console.log(filename)
       fs.unlink(`images/${filename}`, () => {
         console.log('Image supprimée')
       });
@@ -87,8 +90,7 @@ exports.updatePost = (req, res) => {
     })
     })
     .catch(error => { 
-      res.status(400).json({ error: error.message })
-      console.log(bodyImageUrl)
+      res.status(400).json({ error: error.errors[0].message })
       if (bodyImageUrl !== null) {
         const filename = bodyImageUrl.split("/images")[1];
         fs.unlink(`images/${filename}`, () => {
@@ -102,48 +104,35 @@ exports.updatePost = (req, res) => {
     });
   })
   .catch(error => {
-    res.status(500).json({error: error.message})
+    res.status(500).json({ error: error.errors[0].message })
   })
 }
 
+// Création du controller deletePost
 exports.deletePost = (req, res) => {
-  Like.destroy({ where: { postId: req.params.id}})
-  .then(() => {
-    Comment.findAll({ where: { postId: req.params.id }})
-    .then(() => {
-      Comment.destroy({ where: { postId: req.params.id} })
-      .then(() => {
-        Post.findOne({ where: { id: req.params.id }})
-        .then(post => {
-          console.log(post.bodyImageUrl)
-          if (post.bodyImageUrl !== null) {
-            const filename = post.bodyImageUrl.split("/images")[1];
-            fs.unlink(`images/${filename}`, () => {
-              Post.destroy({ where: { id: req.params.id} })
-              .then(() => res.status(200).json({ message: "Post supprimé" }))
-              .catch(error => res.status(500).json({ error: error.message }));
-            });
-          } else {
-            Post.destroy({ where: { id: req.params.id} })
-            .then(() => res.status(200).json({ message: "Post supprimé" }))
-            .catch(error => res.status(500).json({ error: error.message }));
-          }
-        })
-    .catch(error => res.status(500).json({ error: error.message }));
-      })
-      .catch(error => res.status(400).json({ error: error.message }));
-    })
-    .catch(error => res.status(400).json({ error: error.message }))
+  Post.findOne({ where: { id: req.params.id }})
+  .then(post => {
+    if (post.bodyImageUrl !== null) {
+      const filename = post.bodyImageUrl.split("/images")[1];
+      fs.unlink(`images/${filename}`, () => {
+        Post.destroy({ where: { id: req.params.id} })
+        .then(() => res.status(200).json({ message: "Post supprimé" }))
+        .catch(error => res.status(500).json({ error: error.errors[0].message }));
+      });
+    } else {
+      Post.destroy({ where: { id: req.params.id} })
+      .then(() => res.status(200).json({ message: "Post supprimé" }))
+      .catch(error => res.status(500).json({ error: error.errors[0].message }));
+    }
   })
-  .catch(error => res.status(400).json({ error: error.message }))
+  .catch(error => res.status(500).json({ error: error.errors[0].message }));
 }
 
-
+// Création du controller likePost
 exports.likePost = (req, res) => {
   if (req.body.like == 1) {
     Like.findOne({ where: { postId: req.params.id, userId: req.body.userId }})
     .then(like => {
-      console.log(like)
       if (like === null) {
         Like.create({
           userId: req.body.userId,
@@ -167,7 +156,6 @@ exports.likePost = (req, res) => {
       res.status(500).json({ error: error.message})
     })
   } else if (req.body.like == 0) {
-    console.log('je suis ici normalement')
     Like.findOne({ where: { postId: req.params.id, userId: req.body.userId }})
     .then(like => {
       if (like) {

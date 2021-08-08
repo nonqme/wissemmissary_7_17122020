@@ -149,21 +149,13 @@ export default {
           console.log(error)
           this.$refs.file.value=null;
           this.password = '';
-          this.email = '';
           this.confirmpassword = '';
-          this.prenom = '';
-          this.nom = '';
-          this.pseudo = '';
           this.err = error.response.data.error
         })
       } else {
           this.$refs.file.value=null;
           this.password = '';
-          this.email = '';
           this.confirmpassword = '';
-          this.prenom = '';
-          this.nom = '';
-          this.pseudo = '';
         this.err = 'Veuillez vérifier que votre mot de pass et la confirmation de mot de pass correspondent'
         this.$store.commit('setStatus', 'error')
 

@@ -1,12 +1,25 @@
-const { User, Comment, Post, Like } = require('../models/');
+// Appel des models sequelize
+const { User } = require('../models/');
 
+// Appel de File system
 const fs = require("fs");
+
+// Appel de bcrypt
 const bcrypt = require('bcrypt');
+
+// Appel de Jsonwebtoken
 const jwt = require('jsonwebtoken');
+
+// Appel de CryptoJS
 const CryptoJS = require("crypto-js");
+
+// Appel de MaskData
 const MaskData = require('maskdata');
 
-// Création de la route signup
+// Appel de dotenv
+require('dotenv').config()
+
+// Création du controller createAccount
 exports.createAccount = async (req, res, next) => {
   const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
   const emailRegex = /^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
@@ -18,12 +31,11 @@ exports.createAccount = async (req, res, next) => {
     imageUrl = `${req.protocol}://${req.get("host")}/images/default.png`;
   }
   const db = await User.findAll()
-  console.log(req.body.password.length)
   if ((emailRegex.test(req.body.email) === true ) && (req.body.password.length >= 8) && (req.body.password.length <= 20) && (passwordRegex.test(req.body.password) === true )) {
-    bcrypt.hash(req.body.password, parseInt(10))
+    bcrypt.hash(req.body.password, parseInt(process.env.SALT))
       .then(hash => {
-        const key = CryptoJS.enc.Hex.parse("000102030405060708090a0b0c0d0e0f")
-        const iv = CryptoJS.enc.Hex.parse("101112131415161718191a1b1c1d1e1f");
+        const key = CryptoJS.enc.Hex.parse(process.env.CRYPTO_KEY);
+        const iv = CryptoJS.enc.Hex.parse(process.env.CRYPTO_IV);
         const encryptmail = CryptoJS.AES.encrypt(req.body.email, key, {iv: iv}).toString()
         if (db.length === 0) {
           User.create(
@@ -57,7 +69,7 @@ exports.createAccount = async (req, res, next) => {
                 });
               }
             } else {
-              res.status(400).json(error.message)
+              res.status(400).json({error: error.errors[0].message})
               const filename = imageUrl.split("/images/")[1];
               if (req.file) {
                 fs.unlink(`images/${filename}`, () => {
@@ -78,10 +90,28 @@ exports.createAccount = async (req, res, next) => {
               imageUrl: imageUrl
             }
           )
+          
           .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
           .catch(error => {
             if ((error.name) === ("SequelizeUniqueConstraintError")) {
-              res.status(400).json({ error: 'Vous avez déjà un compte.' })
+              res.status(400).json({ error: 'Pseudo ou Email déjà utilisé.' })
+              const filename = imageUrl.split("/images/")[1];
+              if (req.file) {
+                fs.unlink(`images/${filename}`, () => {
+                  console.log('Image supprimée')
+                });
+              }
+            } else if ((error.name) === ("SequelizeValidationError")) {
+              console.log(error)
+              res.status(400).json({error: error.errors[0].message})
+              const filename = imageUrl.split("/images/")[1];
+              if (req.file) {
+                fs.unlink(`images/${filename}`, () => {
+                  console.log('Image supprimée')
+                });
+              }
+            } else {
+              res.status(400).json({error: error.errors[0].message})
               const filename = imageUrl.split("/images/")[1];
               if (req.file) {
                 fs.unlink(`images/${filename}`, () => {
@@ -93,7 +123,7 @@ exports.createAccount = async (req, res, next) => {
         }
       })
       .catch(error => {
-        res.status(500).json({ error })
+        res.status(500).json({error: error.errors[0].message})
         const filename = imageUrl.split("/images/")[1];
         if (req.file) {
           fs.unlink(`images/${filename}`, () => {
@@ -112,21 +142,22 @@ exports.createAccount = async (req, res, next) => {
   } 
 };
 
+// Création du controller readAccount
 exports.readAccount = (req, res, next) => {
   const emailRegex = /^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
-  const email = req.body.email;
-  const key = CryptoJS.enc.Hex.parse("000102030405060708090a0b0c0d0e0f")
-  const iv = CryptoJS.enc.Hex.parse("101112131415161718191a1b1c1d1e1f");
-  const encryptmail = CryptoJS.AES.encrypt(email, key, {iv: iv}).toString()
-  const decryptmail = CryptoJS.AES.decrypt( encryptmail, key, {iv: iv}).toString(CryptoJS.enc.Utf8)
-  const emailMaskOptions = {
-    maskWith: "*", 
-    unmaskedStartCharactersBeforeAt: 0,
-    unmaskedEndCharactersAfterAt: 257, // Give a number which is more than the characters after @
-    maskAtTheRate: false
-};
-const maskedEmail = MaskData.maskEmail2(decryptmail, emailMaskOptions);
   if (emailRegex.test(req.body.email) === true ) {
+    const email = req.body.email;
+    const key = CryptoJS.enc.Hex.parse(process.env.CRYPTO_KEY)
+    const iv = CryptoJS.enc.Hex.parse(process.env.CRYPTO_IV);
+    const encryptmail = CryptoJS.AES.encrypt(email, key, {iv: iv}).toString()
+    const decryptmail = CryptoJS.AES.decrypt( encryptmail, key, {iv: iv}).toString(CryptoJS.enc.Utf8)
+    const emailMaskOptions = {
+      maskWith: "*", 
+      unmaskedStartCharactersBeforeAt: 0,
+      unmaskedEndCharactersAfterAt: 257, // Give a number which is more than the characters after @
+      maskAtTheRate: false
+  };
+  const maskedEmail = MaskData.maskEmail2(decryptmail, emailMaskOptions);
     User.findOne({ where: { email: encryptmail }})
     .then(user => {
       if (!user) {
@@ -147,7 +178,7 @@ const maskedEmail = MaskData.maskEmail2(decryptmail, emailMaskOptions);
             id: user.id,
             token: jwt.sign(
               { id: user.id },
-              'RANDOM_TOKEN_SECRET',
+              process.env.JWT_SECRET,
               { expiresIn: '24h' }
             )
           });
@@ -157,19 +188,15 @@ const maskedEmail = MaskData.maskEmail2(decryptmail, emailMaskOptions);
     .catch(error => res.status(500).json({ error }));
   } else {
     res.status(400).json({ error: "L'email doit être au format xxx@xxxx.xxx"})
-    const filename = imageUrl.split("/images/")[1];
-    if (req.file) {
-      fs.unlink(`images/${filename}`, () => {
-        console.log('Image supprimée')
-      }); 
-    }     
   }  
 };
 
+// Création du controller updateAccount
 exports.updateAccount = (req, res) => {
+  const emailRegex2 = /^[A-Za-z0-9@.]/;
   const emailRegex = /^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
-  const key = CryptoJS.enc.Hex.parse("000102030405060708090a0b0c0d0e0f")
-  const iv = CryptoJS.enc.Hex.parse("101112131415161718191a1b1c1d1e1f");
+  const key = CryptoJS.enc.Hex.parse(process.env.CRYPTO_KEY)
+  const iv = CryptoJS.enc.Hex.parse(process.env.CRYPTO_IV);
   const encryptmail = CryptoJS.AES.encrypt(req.body.email, key, {iv: iv}).toString()
   let imageUrl;
   if (req.file) {
@@ -182,14 +209,20 @@ exports.updateAccount = (req, res) => {
   .then(user => {
     if (user.imageUrl !== (`${req.protocol}://${req.get("host")}/images/default.png`)) {
       const filename = user.imageUrl.split("/images/")[1];
-      console.log(filename)
       fs.unlink(`images/${filename}`, () => {
         console.log('Image supprimée')
       });
     }
-    console.log(req.body.id)
-    if ((user.email !== req.body.email) && (emailRegex.test(req.body.email) === true)) {
+    if ((user.email !== req.body.email) && (emailRegex.test(req.body.email) === true) && ((emailRegex2.test(req.body.email)) === true)) {
       user.email = encryptmail
+    } else {
+      const filename = imageUrl.split("/images/")[1];
+      if (req.file) {
+        fs.unlink(`images/${filename}`, () => {
+          console.log('Image supprimée')
+        });
+      }
+      return res.status(400).json({ error: "L'email doit être au format xxx@xxx.xxx et ne doit pas contenir de caractères speciaux!" })
     }
     if (user.pseudo !== req.body.pseudo) {
       user.pseudo = req.body.pseudo
@@ -205,9 +238,21 @@ exports.updateAccount = (req, res) => {
     }
     user.save({ fields: ["pseudo", "email", "nom", "prenom", "imageUrl"] })
     .then(() => {
+      const decryptmail = CryptoJS.AES.decrypt( encryptmail, key, {iv: iv}).toString(CryptoJS.enc.Utf8)
+      const emailMaskOptions = {
+        maskWith: "*", 
+        unmaskedStartCharactersBeforeAt: 0,
+        unmaskedEndCharactersAfterAt: 257, // Give a number which is more than the characters after @
+        maskAtTheRate: false
+    };
+    const maskedEmail = MaskData.maskEmail2(decryptmail, emailMaskOptions);
       res.status(200).json({
         message: "Votre profil a bien été modifié",
         imageUrl: user.imageUrl,
+        pseudo: user.pseudo,
+        email: maskedEmail,
+        nom: user.nom,
+        prenom: user.prenom
     })
     })
     .catch(error => { 
@@ -231,47 +276,21 @@ exports.updateAccount = (req, res) => {
   });
 }
 
+// Création du controller deleteAccount
 exports.deleteAccount = (req, res) => {
-  Like.destroy({ where: { userId: req.params.id}})
-  .then(() => {
-    Comment.findAll({ where: { userId: req.params.id }})
-    .then(() => {
-      Comment.destroy({ where: { userId: req.params.id} })
-      .then(() => {
-        Post.findAll({ where: { userId: req.params.id }})
-        .then(posts => {
-          posts.forEach(post=> {
-            if (post.bodyImageUrl !== null) {
-              const filename = post.bodyImageUrl.split("/images")[1];
-              fs.unlink(`images/${filename}`, () => {
-              })
-            }
-          })
-          Post.destroy({ where: { userId: req.params.id} })
-          .then(() => {
-            const defaultUrl = `${req.protocol}://${req.get("host")}/images/default.png`;
-            User.findOne({ where: { id: req.params.id }})
-            .then(user => {
-              if (user.imageUrl !== defaultUrl) {
-                const filename = user.imageUrl.split("/images")[1];
-                fs.unlink(`images/${filename}`, () => {
-                });
-              }
-              User.destroy({ where: { id: req.params.id} })
-              .then(() => res.status(200).json({ message: "utilisateur supprimé" }))
-              .catch(error => res.status(400).json({ error }));
-            })
-            .catch(error => res.status(500).json({ error }));  
-          })
-          .catch(error => res.status(500).json({ error }));
-        })
-        .catch(error => res.status(500).json({ error })); 
-      })
-      .catch(error => res.status(500).json({ error }));
-    })
-    .catch(error => res.status(500).json({ error }));
+  const defaultUrl = `${req.protocol}://${req.get("host")}/images/default.png`;
+  User.findOne({ where: { id: req.params.id }})
+  .then(user => {
+    if (user.imageUrl !== defaultUrl) {
+      const filename = user.imageUrl.split("/images")[1];
+      fs.unlink(`images/${filename}`, () => {
+      });
+    }
+    User.destroy({ where: { id: req.params.id} })
+    .then(() => res.status(200).json({ message: "utilisateur supprimé" }))
+    .catch(error => res.status(400).json({ error }));
   })
-  .catch(error => res.status(400).json({ error }))
+  .catch(error => res.status(500).json({ error }));  
 }
 
 

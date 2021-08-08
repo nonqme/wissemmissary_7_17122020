@@ -27,7 +27,7 @@
         </div> 
 
         <div v-if="mode == 'mymessages'">
-            <article v-for="post in posts.slice(-10).reverse()" :key="post.id"  class="card">
+            <article v-for="post in posts.slice(-10).reverse()" :key="post.id"  class="card cardpost">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex justify-content-between align-items-center">
@@ -37,6 +37,21 @@
                             <div class="ml-2">
                                 <div class="h5 m-0">@ {{post.user.pseudo}}</div>
                             </div>
+                        </div>
+                        <div class="text-muted h7 mb-2">
+                            <div class="card-header-flex">
+                                <div v-if="(post.likes.map(like => like.postId).includes(post.id) === true) && (post.likes.map(like => like.userId).includes(this.$store.state.user.id) === true)">
+                                    <i class="fas fa-heart red" @click="dislikePost(post.id)"></i>
+                                </div>
+                                <div v-else>
+                                    <i class="fas fa-heart" @click="likePost(post.id)"></i>
+                                </div>
+                                <p>Likes: {{post.like}}</p>
+                            </div>
+                            <div class="card-header-flex">
+                                <i class="fa fa-clock-o"></i>
+                                <p>{{post.createdAt}}</p>
+                            </div>                              
                         </div>
                     </div>
                 </div>
@@ -51,18 +66,10 @@
                 </div>
                 
                 <div class="card-body">
-                    <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>{{post.createdAt}}</div>
-                    <p class="card-text">
+                    <p class="card-text post-txt">
                         {{post.body}}
                     </p>
-                    <img v-if='post.bodyImageUrl !== null' class="post-img" v-bind:src="post.bodyImageUrl">
-                    <p>Likes:{{post.like}}</p>
-                    <div v-if="(post.likes.map(like => like.postId).includes(post.id) === true) && (post.likes.map(like => like.userId).includes(this.$store.state.user.id) === true)">
-                        <i class="fas fa-heart red" @click="dislikePost(post.id)"></i>
-                    </div>
-                    <div v-else>
-                        <i class="fas fa-heart" @click="likePost(post.id)"></i>
-                    </div>   
+                    <img v-if='post.bodyImageUrl !== null' class="post-img" v-bind:src="post.bodyImageUrl"> 
                 </div>
 
                 <div v-if="postmode == `modify${post.id}`" class="btn-space">
@@ -91,9 +98,10 @@
 
                 <div class="container-fluid">
                     <form v-on:submit.prevent class="card-body">
+                        <h1>Commentaires</h1>
                         <label class="sr-only" for="post">Commentaire</label>
                         <textarea v-model="comment[post.id]" class="form-control" rows="2" placeholder="What are you thinking?"></textarea>
-                        <button @click="createComment(post.id)" type="submit" class="btn btn-primary" :disabled='isDisabled'>
+                        <button @click="createComment(post.id)" type="submit" class="btn btn-primary">
                             <span v-if="status == 'loading'">En cours d'envoi</span>
                             <span v-else>Envoyer</span>
                         </button>
@@ -101,9 +109,9 @@
                 </div>
 
                 <div v-if="posts.length !== 0 || post.comments.length !== 0">
-                    <div v-for="comment in post.comments.slice().reverse()" :key="comment.id" class="card">
-                        <h1>@{{comment.commentUser.pseudo}}</h1>
-                        <p>{{comment.bodyComment}}</p>
+                    <div v-for="comment in post.comments.slice().reverse()" :key="comment.id" class="card cardcomment">
+                        <h2 class="card-header">@{{comment.commentUser.pseudo}}</h2>
+                        <p class=" card-body">{{comment.bodyComment}}</p>
                         <div v-if="commentmode == 'view'">
                             <div v-if="comment.commentUser.id === this.$store.state.user.id || this.$store.state.user.role == 'admin'" class="btn-space">
                                 <button @click="switchToModifyComment(comment.id)" type="submit" class="btn btn-primary">
@@ -138,7 +146,7 @@
             </article>
         </div>
         <div v-if="mode == 'allmessages'">
-            <article v-for="post in posts.slice(-10).reverse()" :key="post.id"  class="card">
+            <article v-for="post in posts.slice(-10).reverse()" :key="post.id"  class="card cardpost">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex justify-content-between align-items-center">
@@ -149,9 +157,25 @@
                                 <div class="h5 m-0">@ {{post.user.pseudo}}</div>
                             </div>
                         </div>
+                        <div class="text-muted h7 mb-2">
+                            <div class="card-header-flex">
+                                <div v-if="(post.likes.map(like => like.postId).includes(post.id) === true) && (post.likes.map(like => like.userId).includes(this.$store.state.user.id) === true)">
+                                    <i class="fas fa-heart red" @click="dislikePost(post.id)"></i>
+                                </div>
+                                <div v-else>
+                                    <i class="fas fa-heart" @click="likePost(post.id)"></i>
+                                </div>
+                                <p>Likes: {{post.like}}</p>
+                            </div>
+                            <div class="card-header-flex">
+                                <i class="fa fa-clock-o"></i>
+                                <p>{{post.createdAt}}</p>
+                            </div>                              
+                        </div>
                     </div>
                 </div>
-                 <div class="form-floating" v-if="postmode == `modify${post.id}`">
+
+                <div class="form-floating" v-if="postmode == `modify${post.id}`">
                     <input type="text" class="form-control" v-model="body" id="floatingBody" placeholder="Doe" name='body' required>
                     <label for="floatingBody">Message</label>
                 </div>
@@ -159,23 +183,16 @@
                 <div class="form-floating" v-if="postmode == `modify${post.id}`">
                     <input ref="file" type="file" accept="image/png, image/jpeg, image/bmp, image/gif" class="form-control" id="floatingFile" name="image" v-on:change="handleFileUpload">
                 </div>
-
+                
                 <div class="card-body">
-                    <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>{{post.createdAt}}</div>
-                    <p class="card-text">
+                    <p class="card-text post-txt">
                         {{post.body}}
                     </p>
-                    <img v-if='post.bodyImageUrl !== null' v-bind:src="post.bodyImageUrl" class="post-img">
-                    <p>Likes:{{post.like}}</p>
-                    <div v-if="(post.likes.map(like => like.postId).includes(post.id) === true) && (post.likes.map(like => like.userId).includes(this.$store.state.user.id) === true)">
-                        <i class="fas fa-heart red" @click="dislikePost(post.id)"></i>
-                    </div>
-                    <div v-else>
-                        <i class="fas fa-heart" @click="likePost(post.id)"></i>
-                    </div>    
+                    <img v-if='post.bodyImageUrl !== null' class="post-img" v-bind:src="post.bodyImageUrl"> 
                 </div>
+
                 <div v-if="postmode == `modify${post.id}`" class="btn-space">
-                    <button @click="modifyPost(post.id)" type="submit" class="btn btn-primary">
+                    <button @click="modifyPost(post.id, post.body)" type="submit" class="btn btn-primary">
                         <span v-if="status == 'modifying'">En cours de modification</span>
                         <span v-else>Valider</span>
                     </button>
@@ -184,6 +201,7 @@
                         <span v-else>Annuler</span>
                     </button>
                 </div>    
+
                 <div v-if="postmode == 'view'">
                     <div v-if="post.user.id === this.$store.state.user.id || this.$store.state.user.role == 'admin'" class="btn-space">
                         <button @click="switchToModifyPost(post.id)" type="submit" class="btn btn-primary">
@@ -196,20 +214,23 @@
                         </button>
                     </div>
                 </div>
+
                 <div class="container-fluid">
                     <form v-on:submit.prevent class="card-body">
+                        <h1>Commentaires</h1>
                         <label class="sr-only" for="post">Commentaire</label>
                         <textarea v-model="comment[post.id]" class="form-control" rows="2" placeholder="What are you thinking?"></textarea>
-                        <button @click="createComment(post.id)" type="submit" class="btn btn-primary" :disabled='isDisabled'>
+                        <button @click="createComment(post.id)" type="submit" class="btn btn-primary">
                             <span v-if="status == 'loading'">En cours d'envoi</span>
                             <span v-else>Envoyer</span>
                         </button>
                     </form>
                 </div>
+
                 <div v-if="posts.length !== 0 || post.comments.length !== 0">
-                    <div v-for="comment in post.comments.slice().reverse()" :key="comment.id" class="card">
-                        <h1>@{{comment.commentUser.pseudo}}</h1>
-                        <p>{{comment.bodyComment}}</p>
+                    <div v-for="comment in post.comments.slice().reverse()" :key="comment.id" class="card cardcomment">
+                        <h2 class="card-header">@{{comment.commentUser.pseudo}}</h2>
+                        <p class=" card-body">{{comment.bodyComment}}</p>
                         <div v-if="commentmode == 'view'">
                             <div v-if="comment.commentUser.id === this.$store.state.user.id || this.$store.state.user.role == 'admin'" class="btn-space">
                                 <button @click="switchToModifyComment(comment.id)" type="submit" class="btn btn-primary">
@@ -222,10 +243,12 @@
                                 </button>
                             </div>
                         </div>
+
                         <div class="form-floating" v-if="commentmode == `modify${comment.id}`">
-                            <input type="text" class="form-control" v-model="this.modifycomment[comment.id]" id="floatingBody" placeholder="Doe" name='body' required>
+                            <input type="text" class="form-control" v-model="modifycomment[comment.id]" id="floatingBody" placeholder="Doe" name='body' required>
                             <label for="floatingBody">Message</label>
                         </div>
+
                         <div v-if="commentmode == `modify${comment.id}`" class="btn-space">
                             <button @click="modifyComment(comment.id)" type="submit" class="btn btn-primary">
                                 <span v-if="status == 'modifying'">En cours de modification</span>
@@ -235,9 +258,10 @@
                                 <span v-if="status == 'modifying'">En cours de modification</span>
                                 <span v-else>Annuler</span>
                             </button>
-                        </div>  
+                        </div> 
+                         
                     </div>
-                </div>       
+                </div>               
             </article>
         </div>        
     </div>   
@@ -278,7 +302,7 @@ export default {
     },
     computed: {        
         isDisabled: function () {
-            if ((this.newbody != "") || (this.comment != [])) {
+            if (this.newbody != "") {
             return false;
             } else {
             return true;
@@ -331,8 +355,9 @@ export default {
         }
         this.$store.dispatch('createPost', fd)
         .then(() =>{
-            this.newbody = '';
-            this.$refs.file.value=null;
+            this.newbody = ''
+            this.file = null
+            this.$refs.file.value = null
             this.$store.dispatch('getMyPosts')
             .then(response =>{
                 this.posts = response.data.posts
@@ -341,10 +366,11 @@ export default {
                 this.err = error.response.data.error
             })
         }).catch(error => {
-            console.log(error)
+            console.log(error);
             this.newbody = '';
-            this.$refs.file.value=null;
-            this.err = error.response.data.error
+            this.file = null;
+            this.$refs.file.value = null;
+            this.err = error.response.data.error;
         }) 
     },
     modifyPost: function(id, body) {
@@ -501,7 +527,6 @@ export default {
       })
     },
     modifyComment: function(id) {
-        console.log(this.modifycomment[id])
       this.$store.dispatch('modifyComment', {
         commentId: id,
         bodyComment: this.modifycomment[id],
@@ -565,7 +590,6 @@ export default {
 <style>
 .card {
     margin: auto;
-    margin-bottom: 10px;
     max-width: 700px;
     display: block;
 }
@@ -587,5 +611,33 @@ export default {
 
 .post-img {
     max-width: 300px;
+}
+
+h1 {
+    font-size: 30px;
+}
+
+h2 {
+    font-size: 25px;
+}
+
+.post-txt {
+    margin: 25px;
+}
+.cardpost {
+    margin-bottom: 100px;
+}
+.cardcomment {
+    margin: 50px;
+}
+.card-header-flex {
+    display:flex;
+    justify-content: flex-end;
+}
+.fa-clock-o {
+    margin-right: 10px;
+}
+.fa-heart {
+    margin-right: 30px;
 }
 </style>

@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate({ Post, Comment }) {
-      this.hasMany(Post, { foreignKey: 'userId', as: 'user' })
+      this.hasMany(Post, { foreignKey: 'userId', as: 'user'})
       this.hasMany(Comment, { foreignKey: 'userId', as: 'commentUser'})
     }
     toJSON() {
@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
           args: true,
       },
       validate: {
-        isAlpha: {
+        isAlphanumeric: {
           args:true,
           msg:'Charactère non autorisé dans le pseudo',
         },
@@ -79,6 +79,7 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'User',
     createdAt: false,
     updatedAt: false,
+    onDelete:'cascade'
   });
   return User;
 };

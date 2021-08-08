@@ -1,11 +1,11 @@
 <template>
 <div>
 <Nav/>
-  <p>{{email}}</p>
-  <p>{{pseudo}}</p>
-  <p>{{nom}}</p>
-  <p>{{prenom}}</p>
-  <img class='profile-img' v-bind:src="image">
+  <p>Email: {{monemail}}</p>
+  <p>Pseudo: {{monpseudo}}</p>
+  <p>Nom: {{monnom}}</p>
+  <p>Prénom: {{monprenom}}</p>
+  <img class='profile-img' v-bind:src="monimage">
   <form class="form-signin" v-on:submit.prevent>
       <div class="form-floating d-flex justify-content-between" v-if="mode == 'view'">
         <a class="mb-3 fw-normal" @click="switchToModifyAccount()">Modifier mes informations</a>
@@ -39,7 +39,7 @@
         <input ref="file" type="file" accept="image/png, image/jpeg, image/bmp, image/gif" class="form-control" id="floatingFile" name="image" v-on:change="handleFileUpload">
       </div>
 
-      <button @click="modifyAccount()" class="w-100 btn btn-lg btn-primary" v-if="mode == 'modify'">
+      <button @click="modifyAccount()" class="w-100 btn btn-lg btn-primary" v-if="mode == 'modify'" :disabled='modifyDisabled'>
         <span v-if="status == 'loading'">Modification en cours...</span>
         <span v-else>Modifier mes informations</span>
       </button>
@@ -53,7 +53,10 @@
         <span v-if="status == 'loading'">Suppression en cours...</span>
         <span v-else>Supprimer mon compte</span>
       </button>
-  </form>  
+  </form>
+    <div class="form-floating" v-if="status == 'error'">
+      <p class="error__message">{{err}}</p>
+    </div>   
   </div>
 </template>
 
@@ -65,6 +68,11 @@ export default {
     components: {Nav},
     data: function() {
     return {
+      monemail:'',
+      monnom:'',
+      monprenom:'',
+      monpseudo:'',
+      monimage:'',
       email:'',
       nom:'',
       prenom:'',
@@ -73,6 +81,7 @@ export default {
       file:null,
       checked:false,
       mode: 'view',
+      err:'',
     }
   },
   mounted: function(){
@@ -80,6 +89,11 @@ export default {
         this.$router.push('/');
         return; 
       }
+      this.monemail = this.$store.state.user.email
+      this.monprenom = this.$store.state.user.prenom
+      this.monnom = this.$store.state.user.nom
+      this.monpseudo = this.$store.state.user.pseudo
+      this.monimage = this.$store.state.user.imageUrl
       this.email = this.$store.state.user.email
       this.prenom = this.$store.state.user.prenom
       this.nom = this.$store.state.user.nom
@@ -87,6 +101,13 @@ export default {
       this.image = this.$store.state.user.imageUrl
   },
     computed: {
+      modifyDisabled: function () {
+        if (this.pseudo != "" && this.email != "" && this.nom != "" && this.prenom != "") {
+          return false;
+        } else {
+          return true;
+        }
+    },
     isDisabled: function () {
         if (this.checked == true) {
           return false;
@@ -113,19 +134,24 @@ export default {
       fd.append('prenom', this.prenom)
       fd.append('nom', this.nom)
       fd.append('id', this.$store.state.user.id)
-      console.log(this.$store.state.user.id)
-      console.log(this.file)
-      console.log(fd)
       if (this.file !== null) {
         fd.append('image', this.file, this.file.name)
       }
       this.$store.dispatch('modifyAccount', fd)
       .then(response =>{
+        this.monemail = response.data.email
+        this.monprenom = response.data.prenom
+        this.monnom = response.data.nom
+        this.monpseudo = response.data.pseudo
         this.mode = 'view';
-        this.image = response.data.imageUrl
+        this.monimage = response.data.imageUrl
         this.$store.state.user.imageUrl = response.data.imageUrl
         this.file = null
-        console.log(response)
+        this.email = response.data.email
+        this.prenom = response.data.prenom
+        this.nom = response.data.nom
+        this.pseudo = response.data.pseudo
+        
       }).catch(error => {
         console.log(error)
         this.err = error.response.data.error
@@ -133,8 +159,7 @@ export default {
     },
     deleteAccount: function() {
         this.$store.dispatch('deleteAccount')
-        .then(response =>{
-          console.log(response)
+        .then(() =>{
           this.$router.push('/')
         }).catch(error => {
           console.log(error)

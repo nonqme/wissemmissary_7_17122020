@@ -1,16 +1,18 @@
+// import du store de vuex
 import { createStore } from 'vuex'
+
+// import de Axios
 import axios from 'axios'
 
+// initialisation de l'instance axios
 const instance = axios.create({
   baseURL: 'http://localhost:3000/api/'
 })
-
 
 let user = (localStorage.getItem('user') || sessionStorage.getItem('user'))
 let now = new Date().getTime();
 let setupTime = localStorage.getItem('expire')
 if (!user || setupTime == null) {
-
   user = {
    id: -1,
    token: '',
@@ -21,16 +23,12 @@ if (!user || setupTime == null) {
    imageUrl:'',
    role:'',
   };
-} else {
-    if (now-setupTime > 23*60*60*1000) {
-      console.log('PAS Good Timer')
+} else if (now-setupTime > 23*60*60*1000) {
       localStorage.clear()
-    }
-  else {
-    console.log('Good Timer')
+} else {
     user = JSON.parse(user)
-  }  
-}
+}  
+
 
 
 export default createStore({
@@ -49,6 +47,8 @@ export default createStore({
     logUser: function (state, user) {
       state.user = user;
       sessionStorage.setItem('user', JSON.stringify(user));
+      let now = new Date().getTime()
+      localStorage.setItem('expire', now)
     },
     logUserRemind: function(state, user) {
       state.user = user;
@@ -268,7 +268,6 @@ export default createStore({
       });
     },
     createComment: ({commit, state}, commentInfo) => {
-      console.log(commentInfo, 'test222') 
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
         instance.post(`/comment/create/${state.user.id}`, commentInfo, {
@@ -288,7 +287,6 @@ export default createStore({
       })
     },
     modifyComment: ({commit, state}, body) => {
-      console.log(body, 'test')
       commit('setStatus', 'modifying');
       return new Promise((resolve, reject) => {
         instance.put(`/comment/update/${body.commentId}`, body, {
