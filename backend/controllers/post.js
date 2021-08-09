@@ -45,7 +45,7 @@ exports.getAllPost = (req, res, next) => {
     });
 };
 
-// Création du controller getAllPost
+// Création du controller getMyPost
 exports.getMyPost = (req, res, next) => {
   Post.findAll({ where: { userId: req.params.id },
     include: 

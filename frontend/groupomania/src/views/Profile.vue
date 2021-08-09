@@ -85,10 +85,14 @@ export default {
     }
   },
   mounted: function(){
+
+    // Vérifie si l'user est déjà log
       if (this.$store.state.user.id == -1) {
         this.$router.push('/');
         return; 
       }
+
+    // Récupère les données dans le store  
       this.monemail = this.$store.state.user.email
       this.monprenom = this.$store.state.user.prenom
       this.monnom = this.$store.state.user.nom
@@ -101,6 +105,8 @@ export default {
       this.image = this.$store.state.user.imageUrl
   },
     computed: {
+
+      // Desactive le bouton si les champs ne sont pas remplis
       modifyDisabled: function () {
         if (this.pseudo != "" && this.email != "" && this.nom != "" && this.prenom != "") {
           return false;
@@ -108,6 +114,8 @@ export default {
           return true;
         }
     },
+    
+    // Désactive la suppression de compte si la case n'est pas cochée
     isDisabled: function () {
         if (this.checked == true) {
           return false;
@@ -115,18 +123,28 @@ export default {
           return true;
         }
     },
+
+    // Appel de mapState
     ...mapState(['status'])
   },
   methods: {
+
+    // Gérer le fichier
     handleFileUpload(){
       this.file = this.$refs.file.files[0]
     },
+
+    // Passer en mode modifier le compte
     switchToModifyAccount: function() {
       this.mode = 'modify';
     },
+
+    // Passer en mode normal
     switchToView: function() {
       this.mode = 'view';
     },
+
+    // Modifier les infos du compte
     modifyAccount: function() {
       const fd = new FormData();
       fd.append('pseudo', this.pseudo)
@@ -157,6 +175,8 @@ export default {
         this.err = error.response.data.error
       })
     },
+
+    // Supprimer le compte 
     deleteAccount: function() {
         this.$store.dispatch('deleteAccount')
         .then(() =>{

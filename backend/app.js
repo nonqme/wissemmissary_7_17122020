@@ -22,7 +22,8 @@ const app = express();
 // Initialisation d'helmet
 app.use(helmet());
 
-// Initialisation des headers qui nous permette d'accéder à notre API depuis n'importe quelle origine, d'ajouter les headers mentionnés aux requêtes envoyées vers notre API et d'envoyer des requêtes avec les méthodes mentionnées 
+/* Initialisation des headers qui nous permette d'accéder à notre API depuis n'importe quelle origine, d'ajouter les headers
+mentionnés aux requêtes envoyées vers notre API et d'envoyer des requêtes avec les méthodes mentionnées */
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');

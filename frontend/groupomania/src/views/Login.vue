@@ -1,5 +1,7 @@
 <template>
+
   <section>
+
     <form class="form-signin" v-on:submit.prevent>
       
       <img src="../assets/icon-left-font.svg" class="login-img">
@@ -94,12 +96,15 @@ export default {
     }
   },
   mounted: function() {
+    // Vérifie si l'user est déjà log
     if (this.$store.state.user.id !== -1) {
         this.$router.push('/posts');
         return;
     }
   },
   computed: {
+    
+    // Desactive le bouton si les champs ne sont pas remplis
     isDisabled: function () {
       if (this.mode == 'create') {
         if (this.pseudo != "" && this.password != "" && this.email != "" && this.nom != "" && this.prenom != "" && this.confirmpassword != "") {
@@ -115,15 +120,22 @@ export default {
         }
       }
     },
+    // Appel de mapState
     ...mapState(['status'])
   },
   methods: {
+
+    // Passer en mode création de compte
     switchToCreateAccount: function() {
       this.mode = 'create';
     },
+
+    // Passer en mode login
     switchToLogin: function() {
       this.mode = 'login';
     },
+
+    // Créer un compte
     createAccount: function() {
       const fd = new FormData();
       fd.append('pseudo', this.pseudo)
@@ -161,6 +173,8 @@ export default {
 
       }  
     },
+
+    // Fonction login
     login: function() {
       if (this.checked == true) {
           this.$store.commit('setStorage', true)
@@ -178,6 +192,7 @@ export default {
         this.err = error.response.data.error
       })
     },
+    // Gérer l'image
     handleFileUpload(){
       this.file = this.$refs.file.files[0]
     }

@@ -9,6 +9,7 @@ const instance = axios.create({
   baseURL: 'http://localhost:3000/api/'
 })
 
+// Récupération des données
 let user = (localStorage.getItem('user') || sessionStorage.getItem('user'))
 let now = new Date().getTime();
 let setupTime = localStorage.getItem('expire')
@@ -30,7 +31,7 @@ if (!user || setupTime == null) {
 }  
 
 
-
+// Création du store
 export default createStore({
   state: {
     storage: false,
@@ -67,6 +68,8 @@ export default createStore({
     }
   },
   actions: {
+
+    // Fonction Login
     login: ({commit, state }, userInfos) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
@@ -86,6 +89,8 @@ export default createStore({
         });
       });
     },
+
+    // Fonction createAccount
     createAccount: ({commit}, formData) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
@@ -101,6 +106,8 @@ export default createStore({
 
       })
     },
+
+    // Fonction modifyAccount
     modifyAccount: ({commit, state}, formData) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
@@ -119,6 +126,8 @@ export default createStore({
         })
       })
     },
+
+    // Fonction deleteAccount
     deleteAccount: ({commit, state}) => {
       commit('setStatus', 'Loading');
       return new Promise((resolve, reject) => {
@@ -141,6 +150,8 @@ export default createStore({
         })
       })   
     },
+
+    // Fonction getMyPosts
     getMyPosts: ({commit, state }) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
@@ -162,6 +173,8 @@ export default createStore({
         });
       });
     },
+
+    // Fonction getAllPosts
     getAllPosts: ({commit, state }) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
@@ -183,6 +196,8 @@ export default createStore({
         });
       });
     },
+
+    // Fonction createPost
     createPost: ({commit, state}, formData) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
@@ -201,6 +216,8 @@ export default createStore({
         })
       })
     },
+
+    // Fonction modifyPost
     modifyPost: ({commit, state}, {id, fd}) => {
       commit('setStatus', 'modifying');
       return new Promise((resolve, reject) => {
@@ -222,6 +239,8 @@ export default createStore({
         })
       })
     },
+
+    // Fonction deletePost
     deletePost: ({commit, state}, postInfo) => {
       commit('setStatus', 'Loading');
       return new Promise((resolve, reject) => {
@@ -246,6 +265,8 @@ export default createStore({
         })
       })   
     },
+
+    // Fonction likePost
     likePost: ({commit, state }, likeInfo) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
@@ -267,6 +288,8 @@ export default createStore({
         });
       });
     },
+
+    // Fonction createComment
     createComment: ({commit, state}, commentInfo) => {
       commit('setStatus', 'loading');
       return new Promise((resolve, reject) => {
@@ -286,6 +309,8 @@ export default createStore({
         })
       })
     },
+
+    //fonction modifyComment
     modifyComment: ({commit, state}, body) => {
       commit('setStatus', 'modifying');
       return new Promise((resolve, reject) => {
@@ -307,6 +332,8 @@ export default createStore({
         })
       })
     },
+
+    // Fonction deleteComment
     deleteComment: ({commit, state}, id) => {
       commit('setStatus', 'Loading');
       return new Promise((resolve, reject) => {

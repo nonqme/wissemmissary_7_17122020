@@ -288,6 +288,8 @@ export default {
         }
   },
     mounted: function() {
+
+        // Vérifie si l'user est déjà log
         if (this.$store.state.user.id == -1) {
             this.$router.push('/');
             return;
@@ -300,7 +302,8 @@ export default {
             this.err = error.response.data.error
         })
     },
-    computed: {        
+    computed: {    
+        // Desactive le bouton si les champs ne sont pas remplis    
         isDisabled: function () {
             if (this.newbody != "") {
             return false;
@@ -308,12 +311,18 @@ export default {
             return true;
             }
         },
+
+        // Appel de mapState
         ...mapState(['status'])
     },
     methods: {
+
+    // Gérer l'image
     handleFileUpload(){
       this.file = this.$refs.file.files[0]
     },
+
+    // Passer en mode tout les messages
     switchToAllMessages: function() {
       this.mode = 'allmessages';
         this.$store.dispatch('getAllPosts')
@@ -324,6 +333,8 @@ export default {
             this.err = error.response.data.error
         })
     },
+
+    // Passer en mode mes messages
     switchToMyMessages: function() {
       this.mode = 'mymessages';
         this.$store.dispatch('getMyPosts')
@@ -334,18 +345,28 @@ export default {
             this.err = error.response.data.error
         })
     },
+
+    // Passer en mode modifier mon message
     switchToModifyPost: function(id) {
       this.postmode = `modify${id}`;
     },
+
+    // Passer en mode modifier mon commentaire
     switchToModifyComment: function(id) {
       this.commentmode = `modify${id}`;
     },
+    
+    // Passer en mode normal
     switchToView: function() {
       this.postmode = 'view';
     },
+
+    // Passer en mode normal commentaire
     switchToCommentView: function() {
       this.commentmode = 'view';
     },
+
+    // Création de message
     createPost: function() {
         const fd = new FormData();
         fd.append('body', this.newbody)
@@ -373,6 +394,8 @@ export default {
             this.err = error.response.data.error;
         }) 
     },
+
+    // Modifier le message
     modifyPost: function(id, body) {
         const fd = new FormData();
         if (this.body === '') {
@@ -412,6 +435,8 @@ export default {
         this.err = error.response.data.error
       })
     },
+
+    // Supprimer le message
     deletePost: function (id, userid) {
         this.$store.dispatch('deletePost', {
             postId: id,
@@ -440,6 +465,8 @@ export default {
             this.err = error.response.data.error
         })
     },
+
+    // Liker le message
     likePost: function(id) {
         this.$store.dispatch('likePost', {
             postId: id,
@@ -468,6 +495,8 @@ export default {
         this.err = error.response.data.error
       })
     },
+
+    // Ne plus like le message
     dislikePost: function(id) {
         this.$store.dispatch('likePost', {
             postId: id,
@@ -496,6 +525,8 @@ export default {
         this.err = error.response.data.error
       })
     },
+
+    // Créer un commentaire
     createComment: function(id) {
       this.$store.dispatch('createComment', {
         postId: id,
@@ -526,6 +557,8 @@ export default {
         this.err = error.response.data.error
       })
     },
+
+    // Modifier commentaire
     modifyComment: function(id) {
       this.$store.dispatch('modifyComment', {
         commentId: id,
@@ -558,6 +591,8 @@ export default {
         this.err = error.response.data.error
       })
     },
+
+    // Supprimer commentaire
     deleteComment: function (id) {
     this.$store.dispatch('deleteComment', id)
     .then(() =>{        
