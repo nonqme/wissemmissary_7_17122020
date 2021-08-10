@@ -183,9 +183,9 @@ exports.readAccount = (req, res, next) => {
             )
           });
         })
-        .catch(error => res.status(500).json({ error }));
+        .catch(error => res.status(500).json({error: error.errors[0].message}));
       })
-    .catch(error => res.status(500).json({ error }));
+    .catch(error => res.status(500).json({error: error.errors[0].message}));
   } else {
     res.status(400).json({ error: "L'email doit être au format xxx@xxxx.xxx"})
   }  
@@ -256,7 +256,7 @@ exports.updateAccount = (req, res) => {
     })
     })
     .catch(error => { 
-      res.status(400).json({ error })
+      res.status(400).json({error: error.errors[0].message})
       const filename = imageUrl.split("/images/")[1];
       if (req.file) {
         fs.unlink(`images/${filename}`, () => {
@@ -266,7 +266,7 @@ exports.updateAccount = (req, res) => {
     });
   })
   .catch(error => { 
-    res.status(500).json({ error })
+    res.status(500).json({error: error.errors[0].message})
     const filename = imageUrl.split("/images/")[1];
     if (req.file) {
       fs.unlink(`images/${filename}`, () => {
@@ -288,9 +288,9 @@ exports.deleteAccount = (req, res) => {
     }
     User.destroy({ where: { id: req.params.id} })
     .then(() => res.status(200).json({ message: "utilisateur supprimé" }))
-    .catch(error => res.status(400).json({ error }));
+    .catch(error => res.status(400).json({error: error.errors[0].message}));
   })
-  .catch(error => res.status(500).json({ error }));  
+  .catch(error => res.status(500).json({error: error.errors[0].message}));  
 }
 
 

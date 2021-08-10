@@ -13,6 +13,6 @@ exports.limiter = rateLimit({
 // Création du middleware speedLimiter
 exports.speedLimiter = slowDown({
   windowMs : 1 * 60 * 60 * 1000, // 1 heure
-  delayAfter : 5, // Commence à ralentir les requètes après 5 essai
+  delayAfter : 10, // Commence à ralentir les requètes après 5 essai
   delayMs: 1000 
 });
