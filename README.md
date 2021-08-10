@@ -3,7 +3,7 @@
 ## Instruction mySQL :
 
 *Connectez vous au serveur mySQL de votre choix. `mysql -u 'user' -p`  
-*Si vous utiliser un autre utilisateur que root veuillez vous administrer les droits sur la base de donnée de votre choix. `GRANT ALL PRIVILEGES ON madatabase.** to 'user'@'localhost';`  
+*Si vous utiliser un autre utilisateur que root veuillez vous administrer les droits sur la base de donnée de votre choix. `GRANT ALL PRIVILEGES ON madatabase.* to 'user'@'localhost';`  
 *Créez une base de donnée MYSQL avec le nom utilisé à l'étape d'avant. `CREATE DATABASE madatabase;`  
 
 ## Instruction backend :
@@ -20,7 +20,7 @@
 *Lancez le terminal dans ce dossier.  
 *Effectuez un `npm install` pour installer les modules.  
 *Lancez le frontend avec `npm run serve`.  
-*Le site devrait être à cette adresse: [link text itself]: http://localhost:8080/.  
+*Le site devrait être à cette adresse: http://localhost:8080/.  
 
 ## Information supplémentaire frontend :
 
