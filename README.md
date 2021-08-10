@@ -37,4 +37,4 @@
 *Utilisation de __rate limiter__ pour limiter le login à __10__ requètes par __IP__ par __heure__.  
 *Utilisation de __speed limiter__ pour ralentir les tentatives de connections après __10__ essais.  
 *Utilisation de __dotenv__ pour cacher les données sensibles dans le code.  
-*Utilisation de __maskData__ pour cacher les informations personnel envoyé à l'utilisateur.  
+*Utilisation de __maskData__ pour cacher les informations personnelles envoyé à l'utilisateur.  

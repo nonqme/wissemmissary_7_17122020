@@ -1,8 +1,8 @@
 {
   "development": {
-    "username": "user",
-    "password": "090490",
-    "database": "groupomania",
+    "username": "USER",
+    "password": "PASSWORD",
+    "database": "MADATABASE",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
